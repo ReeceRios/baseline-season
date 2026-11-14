@@ -104,7 +104,8 @@ with sync_playwright() as pw:
     p.click("#tabs [data-tab=workouts]"); assert p.locator("#workouts li b").first.inner_text() == "Tendon prep" and "@garagestrength" in p.locator("#workouts li .src").first.inner_text()
     # Section tiles, previous / next buttons and a sideways swipe all move between sections
     p = open_at(b, "2026-11-23T08:00:00")
-    assert p.locator("#tiles .tile svg.pic").count() == 4 and "NaN" not in p.inner_html("#tiles")
+    p.wait_for_function("[...document.querySelectorAll('#tiles img')].every(i => i.complete)")
+    assert p.locator("#tiles .tile img").count() == 4 and p.evaluate("[...document.querySelectorAll('#tiles img')].every(i => i.naturalWidth === 360)")
     p.click("#tiles [data-go=mob]")
     assert p.locator("#workouts").is_visible() and p.locator("#workouts details[open]").count() == 1 and p.locator("#workouts details[open] .p-mob").count() == 1
     p.click("#workouts .pager [data-nav=flows]"); assert p.locator("#flows").is_visible() and p.locator("#tabs .on").inner_text().strip() == "Flows"

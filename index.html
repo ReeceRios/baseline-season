@@ -75,11 +75,11 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px 6px;b
 a{color:var(--ink)}ul{padding-left:20px}li{margin:6px 0}
 .tabpage{display:none}.tabpage.on{display:block;animation:slide .22s ease-out}@keyframes slide{from{opacity:0;transform:translateX(var(--from,0))}}
 @media (prefers-reduced-motion:reduce){.tabpage.on{animation:none}}
-.pic{width:1em;height:1em;flex:none}.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tile{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:150px;padding:12px 14px 14px;border:0;border-radius:12px;background:var(--rough);background-size:320px,cover;color:#fff;text-align:left;cursor:pointer}
-.tile .pic{font-size:96px;align-self:center;margin-bottom:auto}.tile b{font-size:17px}.tile span{font-size:13px;color:#DAD6F5}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:0 0 12px;border:0;border-radius:12px;overflow:hidden;background:#1A1250;color:#fff;text-align:left;cursor:pointer}
+.tile img{display:block;width:100%;height:auto;margin-bottom:8px;pointer-events:none}.tile b{font-size:17px;padding:0 14px}.tile span{font-size:13px;color:#DAD6F5;padding:0 14px}
 .pager{display:flex;gap:8px;margin:16px 0 0}.pager .ghost{margin:0}.pager span{flex:1}
-.pill .pic{font-size:22px;vertical-align:-6px;margin-right:4px}
+.pill[class*="p-"]:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--c)}
 .donebtn{white-space:nowrap;min-height:44px;padding:10px 14px;border-radius:8px;border:1.5px solid var(--ink);background:#fff;font-size:14px;font-weight:700;cursor:pointer}
 .donebtn.is{background:var(--tint);border-color:var(--tint)}
 textarea{width:100%;padding:12px;border:1.5px solid var(--mid);border-radius:8px;background:#fff;font:14px ui-monospace,monospace;margin:6px 0}
@@ -341,19 +341,8 @@ addEventListener("touchstart",e=>{sx=e.changedTouches[0].clientX;sy=e.changedTou
 addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
 if(Math.abs(dx)<70||Math.abs(dx)<2*Math.abs(dy)||!$("intro").hidden||!$("quote").hidden||e.target.closest("#loadtable,input,textarea,select"))return;
 go(TABS[TABS.indexOf(document.querySelector(".tabpage.on").id)+(dx<0?1:-1)])},{passive:true});
-// Pictograms: solid tapered shapes on a jointed skeleton. Legs are [thigh, knee bend], arms [shoulder, elbow bend], degrees from straight down, + is forward.
-function figure({hip,lean,legs,arms,plate,air}){
-const pt=(p,a,l)=>[p[0]+l*Math.sin(a*Math.PI/180),p[1]+l*Math.cos(a*Math.PI/180)],f=v=>v.toFixed(1);
-const quad=(a,b,w1,w2)=>{const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy),nx=-dy/l/2,ny=dx/l/2;return `<polygon points="${[[a[0]+nx*w1,a[1]+ny*w1],[b[0]+nx*w2,b[1]+ny*w2],[b[0]-nx*w2,b[1]-ny*w2],[a[0]-nx*w1,a[1]-ny*w1]].map(p=>p.map(f)).join(" ")}"/>`};
-const dot=(p,r)=>`<circle cx="${f(p[0])}" cy="${f(p[1])}" r="${r}"/>`;
-const sh=pt(hip,180-lean,27),hd=pt(sh,180-lean,10),hands=[];
-const leg=([t,k])=>{const kn=pt(hip,t,20),an=pt(kn,t-k,20);return quad(hip,kn,10,6.5)+dot(kn,3.25)+quad(kn,an,6.5,3.5)+quad(an,pt(an,t-k+85,8),3.5,2)};
-const arm=([a,b])=>{const el=pt(sh,a,14),h=pt(el,a+b,13);hands.push(h);return quad(sh,el,6,4.5)+dot(el,2.25)+quad(el,h,4.5,2.5)};
-const back=arm(arms[1]),front=arm(arms[0]),bar=hands[1];
-return `<svg class="pic" viewBox="6 2 88 96" aria-hidden="true" fill="currentColor">${back}${leg(legs[1])}${quad(hip,sh,9,15)}${dot(hip,4.5)}${leg(legs[0])}${plate?`<circle cx="${f(bar[0])}" cy="${f(bar[1])}" r="14" fill="none" stroke="currentColor" stroke-width="3.5"/>${dot(bar,3)}`:""}${front}${dot(hd,7)}${air?'<rect x="14" y="91" width="72" height="2.5"/>':""}</svg>`}
-const PIC={plyo:figure({hip:[40,50],lean:32,legs:[[78,100],[58,88]],arms:[[112,12],[92,18]],air:1}),mob:figure({hip:[44,70],lean:2,legs:[[84,96],[-42,46]],arms:[[178,2],[150,10]]}),cardio:figure({hip:[44,58],lean:18,legs:[[68,84],[-32,12]],arms:[[-52,100],[48,100]]}),lift:figure({hip:[38,58],lean:38,legs:[[30,48],[8,34]],arms:[[4,4],[-4,6]],plate:1})};
-$("tiles").innerHTML=[["plyo","Plyos","15–20 min"],["mob","Mobility","10 min"],["cardio","Cardio","15–25 min"],["lift","Lifting","30–40 min"]].map(([k,n,t])=>`<button class="tile" data-go="${k}">${PIC[k]}<b>${n}</b><span>${t}</span></button>`).join("");
-for(const k in PIC)document.querySelector("#workouts .p-"+k).insertAdjacentHTML("afterbegin",PIC[k]);
+// Section tiles use Reece's own pictograms (icons/tile-*.webp), recoloured to dark purple.
+$("tiles").innerHTML=[["plyo","Plyos","15–20 min"],["mob","Mobility","10 min"],["cardio","Cardio","15–25 min"],["lift","Lifting","30–40 min"]].map(([k,n,t])=>`<button class="tile" data-go="${k}"><img src="icons/tile-${k}.webp" alt="" width="360" height="360"><b>${n}</b><span>${t}</span></button>`).join("");
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()}); // roll over to the new day when the app is reopened
 document.querySelectorAll("#workouts li,#flows li").forEach(li=>{li.innerHTML=fmt(li.textContent)});
 load();$("logDate").value=iso(new Date());render();
