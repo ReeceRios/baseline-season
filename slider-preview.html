@@ -62,6 +62,10 @@ button{font:inherit;color:inherit}
 #entry{position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer}
 #entry svg{width:min(80vw,340px,52vh);height:auto;overflow:visible}
 #entry p{margin:0;color:#fff;font-size:30px;font-weight:700;letter-spacing:.01em}
+#eTitle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;opacity:0}
+#eTitle b{font-size:40px;line-height:44px;font-weight:700;letter-spacing:-.01em}
+#eTitle i{display:block;width:132px;height:4px;border-radius:2px;background:linear-gradient(90deg,#F58CA6,#7C68FA 55%,#3EB7DE);transform-origin:0 50%}
+#eTitle span{font-size:16px;color:#DAD6F5}
 #entry .f{opacity:0;animation:run .8s steps(1) infinite}
 @keyframes run{0%{opacity:1}12.5%,100%{opacity:0}}
 /* video sheet */
@@ -92,6 +96,7 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}
     <g id="eWire" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round"></g>
   </svg>
   <p id="eText">Let’s begin</p>
+  <div id="eTitle"><b>Baseline season</b><i></i><span>1% better every day.</span></div>
 </div>
 <div class="wrap" id="wrap">
   <div class="top">
@@ -180,7 +185,7 @@ const got=i=>ticks[i].filter(Boolean).length, complete=i=>got(i)>=S[i].need;
 const pt=t=>[36+248*t, 28+48*t*(1-t)];
 $("reel").innerHTML=S.map(s=>`<img src="icons/tile-${s.k}.webp" alt="" width="360" height="360">`).join("");
 S.forEach((s,i)=>{const c=document.createElementNS(NS,"circle");const [x,y]=pt(i/3);c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",4.5);c.setAttribute("fill",s.c);c.setAttribute("stroke","rgba(255,255,255,.5)");$("dots").appendChild(c)});
-// --- entry: the gradient runner with a white wire-mesh runner drawn over it; runs 2.8 s, then fades ---
+// --- entry: runner for 2.8 s, then the "Baseline season" title, then the black screen lifts off the app ---
 // Each pair is [thigh, knee bend] in degrees; thigh is measured from straight down, + is forward.
 const RUN=[[25,15],[5,35],[-25,15],[-20,70],[0,105],[35,100],[55,70],[45,30]];
 function runner(f){
@@ -214,11 +219,23 @@ function enter(){
  $("eBody").innerHTML=fr.map(x=>x[0]).join("");$("eWire").innerHTML=fr.map(x=>x[1]).join("");
  const wrap=$("wrap");wrap.style.opacity=0;
  animate("#eText",{opacity:[0,1],y:[10,0]},{duration:.35,ease:"easeOut"});
- let left=false;
+ let left=false,timer=0;
+ // the runner runs off and the title takes its place
+ const title=()=>{
+  animate("#entry svg",{opacity:0,x:46},{duration:.45,ease:"easeIn"});
+  animate("#eText",{opacity:0,y:-8},{duration:.3,ease:"easeIn"});
+  animate("#eTitle",{opacity:[0,1]},{duration:.3,delay:.35});
+  animate("#eTitle b",{opacity:[0,1],y:[18,0]},{duration:.5,delay:.35,ease:"easeOut"});
+  animate("#eTitle i",{scaleX:[0,1]},{duration:.55,delay:.55,ease:[.2,.8,.2,1]});
+  animate("#eTitle span",{opacity:[0,1],y:[8,0]},{duration:.4,delay:.75,ease:"easeOut"});
+  timer=setTimeout(leave,2000);
+ };
+ // the black screen lifts away like a curtain while the app settles into place
  const leave=()=>{if(left)return;left=true;clearTimeout(timer);
-  animate(entry,{opacity:0,scale:1.04},{duration:.45,ease:"easeInOut"}).then(()=>entry.remove());
-  animate(wrap,{opacity:[0,1],y:[14,0]},{duration:.5,delay:.1,ease:"easeOut"}).then(()=>{wrap.style.transform=""})};
- const timer=setTimeout(leave,2800);entry.addEventListener("click",leave);
+  animate(entry,{y:"-100%"},{duration:.65,ease:[.7,0,.2,1]}).then(()=>entry.remove());
+  animate("#eTitle",{y:60},{duration:.65,ease:[.7,0,.2,1]});
+  animate(wrap,{opacity:[0,1],scale:[.94,1],y:[40,0]},{duration:.7,delay:.12,ease:[.2,.8,.2,1]}).then(()=>{wrap.style.transform=""})};
+ timer=setTimeout(title,2800);entry.addEventListener("click",leave);
 }
 enter();
 
