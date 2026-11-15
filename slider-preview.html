@@ -52,6 +52,18 @@ button{font:inherit;color:inherit}
 .timer{display:flex;align-items:center;gap:8px}.timer span{flex:1;font-size:13px;color:var(--muted)}.timer b{color:var(--ink);font-size:15px}
 .timer button{height:44px;padding:0 12px;border:1px solid var(--muted);border-radius:10px;background:#fff;font-weight:700;cursor:pointer}
 .tag{align-self:center;font-size:12px;color:var(--muted)}
+.toggle,.daycheck,.timer button,.vchip,.x,.play i{transition:transform .18s cubic-bezier(.3,1.5,.5,1)}
+.toggle:active{transform:scale(.975)}.daycheck:active,.timer button:active,.vchip:active,.x:active{transform:scale(.93)}.play:active i{transform:scale(.86)}
+.burst{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none;z-index:15}
+.burst i{position:absolute;left:-2.5px;top:-2.5px;width:5px;height:5px;border-radius:50%}
+.burst b{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;border:2px solid}
+#toggleCount{display:inline-block}
+/* entry: black screen, runner, then the main screen fades in */
+#entry{position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+#entry svg{width:min(80vw,340px,52vh);height:auto;overflow:visible}
+#entry p{margin:0;color:#fff;font-size:30px;font-weight:700;letter-spacing:.01em}
+#entry .f{opacity:0;animation:run .8s steps(1) infinite}
+@keyframes run{0%{opacity:1}12.5%,100%{opacity:0}}
 /* video sheet */
 .scrim{position:fixed;inset:0;background:rgba(16,12,40,.45);opacity:0;pointer-events:none;transition:opacity .2s}
 .sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;background:rgba(246,245,255,.86);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4);border:1px solid rgba(255,255,255,.7);border-bottom:0;box-shadow:0 -12px 40px rgba(16,12,40,.25);border-radius:22px 22px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));opacity:0;visibility:hidden;display:flex;flex-direction:column;gap:12px;max-height:100dvh;overflow-y:auto}
@@ -66,11 +78,22 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}
 .vchip[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
 .credit{font-size:12px;color:var(--muted)}
 @media (orientation:landscape) and (max-height:520px){.wrap{max-width:720px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);align-items:start}.top,.tag{grid-column:1/-1}.card{grid-row:span 2}.vid{width:min(100%,calc((100dvh - 170px)*16/9));align-self:center}}
-@media (prefers-reduced-motion:reduce){.scrim,.toggle svg{transition:none}.panel.enter>*{animation:none}}
+@media (prefers-reduced-motion:reduce){.scrim,.toggle svg{transition:none}.panel.enter>*{animation:none}#entry{display:none}.toggle,.daycheck,.timer button,.vchip,.x,.play i{transition:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div id="entry" aria-hidden="true">
+  <svg viewBox="60 120 280 370">
+    <defs>
+      <linearGradient id="eRg" gradientUnits="userSpaceOnUse" spreadMethod="repeat" x1="270" y1="130" x2="110" y2="460"><stop offset="0" stop-color="#FFD9B8"/><stop offset=".16" stop-color="#F58CA6"/><stop offset=".32" stop-color="#D2264E"/><stop offset=".46" stop-color="#3A0F4A"/><stop offset=".6" stop-color="#7C68FA"/><stop offset=".76" stop-color="#3EB7DE"/><stop offset=".9" stop-color="#F4E3D0"/><stop offset="1" stop-color="#FFD9B8"/><animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="-160 330" dur="1.6s" repeatCount="indefinite"/></linearGradient>
+      <filter id="eSmear" x="-80%" y="-20%" width="220%" height="140%"><feGaussianBlur stdDeviation="24 4"/></filter>
+    </defs>
+    <g id="eBody" fill="none" stroke="url(#eRg)" stroke-linecap="round" stroke-linejoin="round"></g>
+    <g id="eWire" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round"></g>
+  </svg>
+  <p id="eText">Let’s begin</p>
+</div>
+<div class="wrap" id="wrap">
   <div class="top">
     <button class="daycheck" id="dayCheck" type="button" aria-pressed="false" aria-label="Mark day done"><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.5" stroke="#202020" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="chip"><span>Week</span><b>3 <small>of 12</small></b></div>
@@ -90,7 +113,7 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}
     <div class="label" aria-live="polite"><b id="name"></b><span id="sub"></span></div>
   </div>
 
-  <button class="toggle" id="toggle" type="button" aria-expanded="false" aria-controls="panel"><span id="toggleText"></span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <button class="toggle" id="toggle" type="button" aria-expanded="false" aria-controls="panel"><span><span id="toggleText"></span><span id="toggleCount"></span></span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   <div class="panel" id="panel" hidden></div>
   <span class="tag">Preview · sample day · slide, swipe the picture, or tap a dot</span>
 </div>
@@ -157,6 +180,60 @@ const got=i=>ticks[i].filter(Boolean).length, complete=i=>got(i)>=S[i].need;
 const pt=t=>[36+248*t, 28+48*t*(1-t)];
 $("reel").innerHTML=S.map(s=>`<img src="icons/tile-${s.k}.webp" alt="" width="360" height="360">`).join("");
 S.forEach((s,i)=>{const c=document.createElementNS(NS,"circle");const [x,y]=pt(i/3);c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",4.5);c.setAttribute("fill",s.c);c.setAttribute("stroke","rgba(255,255,255,.5)");$("dots").appendChild(c)});
+// --- entry: the gradient runner with a white wire-mesh runner drawn over it, about 1.8 s in all ---
+// Each pair is [thigh, knee bend] in degrees; thigh is measured from straight down, + is forward.
+const RUN=[[25,15],[5,35],[-25,15],[-20,70],[0,105],[35,100],[55,70],[45,30]];
+function runner(f){
+ const P=(p,a,l)=>[p[0]+l*Math.sin(a*Math.PI/180),p[1]+l*Math.cos(a*Math.PI/180)];
+ const hip=[190,300+4*Math.cos(Math.PI*(f-1)/2)],sh=P(hip,170,104),head=P(sh,170,36),segs=[];
+ const leg=(g,far)=>{const[t,k]=RUN[g],kn=P(hip,t,78),an=P(kn,t-k,78);segs.push([hip,kn,30,far],[kn,an,20,far],[an,P(an,t-k+80,22),13,far])};
+ const arm=(g,far)=>{const a=40*Math.cos(Math.PI*(g-2)/4),el=P(sh,a,54);segs.push([sh,el,18,far],[el,P(el,a+90,48),13,far])};
+ const o=(f+4)%8; arm(o,1);leg(o,1);segs.push([hip,sh,44,0]);leg(f,0);segs.push([sh,P(sh,170,16),14,0]);arm(f,0);
+ const r=n=>Math.round(n*10)/10;
+ // solid body, in the moving gradient
+ const body=segs.map(([a,b,w,far])=>`<path d="M${r(a[0])} ${r(a[1])}L${r(b[0])} ${r(b[1])}" stroke-width="${w}"${far?' opacity=".72"':""}/>`).join("")+`<circle cx="${r(head[0])}" cy="${r(head[1])}" r="20" fill="url(#eRg)" stroke="none"/>`;
+ // wire mesh: rings of points along each limb, joined into triangles, plus threads to nearby limbs
+ let seed=f*977+13;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+ const V=[],E=[],link=(i,j)=>E.push(i,j);
+ segs.forEach(([a,b,w],si)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,rings=L>60?3:2;let prev=-1;
+  for(let k=0;k<rings;k++){const t=k/(rings-1),cx=a[0]+dx*t,cy=a[1]+dy*t,h=w/2*(.85+.5*rnd()),h2=w/2*(.85+.5*rnd()),i=V.length;
+   V.push([cx+nx*h+3*(rnd()-.5),cy+ny*h+3*(rnd()-.5),si],[cx-nx*h2+3*(rnd()-.5),cy-ny*h2+3*(rnd()-.5),si]);link(i,i+1);
+   if(prev>=0){link(prev,i);link(prev+1,i+1);link(prev,i+1);if(rnd()>.4)link(prev+1,i)}prev=i}});
+ const h0=V.length;for(let k=0;k<7;k++){const a=k/7*Math.PI*2+rnd()*.3,R=20*(.9+.35*rnd());V.push([head[0]+R*Math.cos(a),head[1]+R*Math.sin(a),99])}
+ V.push([head[0]+4*(rnd()-.5),head[1]+4*(rnd()-.5),99]);for(let k=0;k<7;k++){link(h0+k,h0+(k+1)%7);link(h0+k,h0+7)}
+ for(let i=0;i<V.length;i++){let n=0;for(let j=i+1;j<V.length&&n<2;j++){if(V[i][2]!==V[j][2]&&Math.hypot(V[i][0]-V[j][0],V[i][1]-V[j][1])<34){link(i,j);n++}}}
+ let d="";for(let i=0;i<E.length;i+=2)d+=`M${r(V[E[i]][0])} ${r(V[E[i]][1])}L${r(V[E[i+1]][0])} ${r(V[E[i+1]][1])}`;
+ const dots=V.map(v=>`<circle cx="${r(v[0])}" cy="${r(v[1])}" r="1.3" fill="#fff" stroke="none"/>`).join("");
+ const delay=`animation-delay:${(f-8)/10}s`;
+ return [`<g class="f" style="${delay}"><g filter="url(#eSmear)" opacity=".5" transform="translate(-56 0)">${body}</g>${body}</g>`,`<g class="f" style="${delay}"><path d="${d}" opacity=".9"/>${dots}</g>`];
+}
+const entry=$("entry");
+function enter(){
+ if(reduce){entry.remove();return}
+ const fr=RUN.map((_,f)=>runner(f));
+ $("eBody").innerHTML=fr.map(x=>x[0]).join("");$("eWire").innerHTML=fr.map(x=>x[1]).join("");
+ const wrap=$("wrap");wrap.style.opacity=0;
+ animate("#eText",{opacity:[0,1],y:[10,0]},{duration:.35,ease:"easeOut"});
+ let left=false;
+ const leave=()=>{if(left)return;left=true;clearTimeout(timer);
+  animate(entry,{opacity:0,scale:1.04},{duration:.45,ease:"easeInOut"}).then(()=>entry.remove());
+  animate(wrap,{opacity:[0,1],y:[14,0]},{duration:.5,delay:.1,ease:"easeOut"}).then(()=>{wrap.style.transform=""})};
+ const timer=setTimeout(leave,1350);entry.addEventListener("click",leave);
+}
+enter();
+
+// A ring and eight dots fly out from a point: used when a step is ticked and when a section is finished.
+function burst(x,y,color,size=22){
+ if(reduce)return;
+ const el=document.createElement("div");el.className="burst";el.style.transform=`translate(${x}px,${y}px)`;
+ let h=`<b style="border-color:${color}"></b>`;for(let k=0;k<8;k++)h+=`<i style="background:${k%2?color:"#fff"};box-shadow:0 0 0 1px ${color}"></i>`;
+ el.innerHTML=h;document.body.appendChild(el);
+ animate(el.firstChild,{scale:[.3,size/14],opacity:[.7,0]},{duration:.45,ease:"easeOut"});
+ const dots=el.querySelectorAll("i");
+ for(let k=0;k<8;k++){const a=(k*45+12)*Math.PI/180;animate(dots[k],{x:[0,Math.cos(a)*size*1.25],y:[0,Math.sin(a)*size*1.25],scale:[1,.3],opacity:[1,0]},{duration:.5,delay:.04,ease:"easeOut"})}
+ setTimeout(()=>el.remove(),700);
+}
+
 let pos=0,idx=0,target=0; // target = where the knob is heading, so quick repeat presses add up
 const SPRING={type:"spring",visualDuration:.3,bounce:.2};
 const mv=motionValue(0);
@@ -182,7 +259,9 @@ function paint(changed,dir=0){
  $("knobT").textContent=done?"":idx+1; $("knobK").style.display=done?"":"none";
  $("name").textContent=s.name.toUpperCase(); $("sub").textContent=s.sub;
  $("slider").setAttribute("aria-valuenow",idx+1); $("slider").setAttribute("aria-valuetext",s.name);
- $("toggleText").textContent=`${s.name} steps · ${done?"done":s.need===1?"pick one":got(idx)+" of "+s.need}`;
+ $("toggleText").textContent=`${s.name} steps · `;
+ const cnt=done?"done":s.need===1?"pick one":got(idx)+" of "+s.need,tc=$("toggleCount");
+ if(tc.textContent!==cnt){const up=!changed&&tc.textContent&&!reduce;tc.textContent=cnt;if(up)animate(tc,{opacity:[0,1],y:[9,0]},{type:"spring",stiffness:170,damping:15})}
  renderPanel(changed);
  if(changed&&dir&&!reduce)animate(".label",{opacity:[0,1],x:[14*dir,0]},{duration:.24,ease:"easeOut"});
  const all=S.every((_,i)=>complete(i)); if(all)$("dayCheck").setAttribute("aria-pressed","true");
@@ -227,8 +306,18 @@ $("toggle").onclick=()=>{
  else{pn.style.overflow="hidden";
   animate(pn,{height:[pn.offsetHeight,0],opacity:0},{duration:.2,ease:"easeIn"}).then(()=>{if($("toggle").getAttribute("aria-expanded")!=="true")pn.hidden=true;pn.style.height=pn.style.overflow=pn.style.opacity=""});}
 };
-$("panel").addEventListener("change",e=>{const c=e.target;if(c.dataset.i===undefined)return;ticks[idx][+c.dataset.i]=c.checked?1:0;const keep=document.activeElement;paint();const again=$("panel").querySelector(`input[data-i="${c.dataset.i}"]`);if(keep===c&&again)again.focus()});
-$("dayCheck").onclick=()=>{const b=$("dayCheck");b.setAttribute("aria-pressed",String(b.getAttribute("aria-pressed")!=="true"))};
+$("panel").addEventListener("change",e=>{
+ const c=e.target;if(c.dataset.i===undefined)return;
+ const was=complete(idx),allWas=S.every((_,i)=>complete(i));ticks[idx][+c.dataset.i]=c.checked?1:0;
+ const keep=document.activeElement;paint();
+ const again=$("panel").querySelector(`input[data-i="${c.dataset.i}"]`);if(keep===c&&again)again.focus({preventScroll:true});
+ if(!c.checked||!again||reduce)return;
+ const r=again.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,"#7C68FA",18);
+ animate(again,{scale:[.6,1]},{type:"spring",stiffness:170,damping:15});
+ if(!was&&complete(idx)){const k=$("knobC").getBoundingClientRect();burst(k.left+k.width/2,k.top+k.height/2,"#CFC7FE",34);animate(ks,[1,1.3,1],{duration:.45,ease:"easeOut"})}
+ if(!allWas&&S.every((_,i)=>complete(i))){const d=$("dayCheck").getBoundingClientRect();burst(d.left+d.width/2,d.top+d.height/2,"#7C68FA",30)}
+});
+$("dayCheck").onclick=()=>{const b=$("dayCheck"),on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",String(on));if(on){const d=b.getBoundingClientRect();burst(d.left+d.width/2,d.top+d.height/2,"#7C68FA",30)}};
 let restEnd=0,restInt=0;
 function showRest(){const o=$("restOut");if(!o)return;const left=Math.max(0,Math.ceil((restEnd-Date.now())/1000));o.textContent=left?`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`:"";if(!left&&restInt){clearInterval(restInt);restInt=0}}
 document.addEventListener("click",e=>{
