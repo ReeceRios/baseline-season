@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Baseline">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<meta name="description" content="Reece's 12-week workout tracker: dunk, strength, 5K and 10K.">
+<title>Baseline Season — Reece</title>
+<style>
+/* Tenstorrent brand tokens: Tens Purple, Slate++, Slate+, Slate Accent, brand black, accent red / green / teal */
+@font-face{font-family:"DM Sans";src:url(fonts/dm-sans.woff2) format("woff2");font-weight:100 1000;font-display:swap}
+:root{--ink:#202020;--purple:#7C68FA;--tint:#E2DEFC;--slate:#EDEFF9;--mid:#979DBD;--muted:#606891;--red:#FA512E;--green:#608C84;--teal:#3EB7DE;--grad:linear-gradient(90deg,#FA512E,#7C68FA 50%,#3EB7DE)}
+[hidden]{display:none!important}
+:root{--rough:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='a' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .018' numOctaves='5' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 3.4 0 0 0 -1.62'/%3E%3C/filter%3E%3Cfilter id='b' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.6 0 0 0 -.72'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url%28%23a%29' opacity='.34'/%3E%3Crect width='320' height='320' filter='url%28%23b%29' opacity='.2'/%3E%3C/svg%3E"),linear-gradient(155deg,#4B3BC4,#2A1E7A 55%,#1A1250)}
+*{box-sizing:border-box}body{margin:0;font-family:"Arial Nova","DM Sans",Arial,sans-serif;font-weight:300;background:#fff;color:var(--ink)}
+button,input,select,textarea{font-family:inherit;color:var(--ink)}b,th{font-weight:700}
+:focus-visible{outline:3px solid var(--purple);outline-offset:2px}
+header{padding:calc(18px + env(safe-area-inset-top)) 16px 4px}header h1{margin:0;font-size:34px;font-weight:300;line-height:1.15}header h1 span{display:block;color:var(--muted)}
+header p{margin:8px 0 0;color:var(--muted);font-size:14px}#season svg{display:block;width:100%;height:28px;margin-top:14px}
+#intro{position:fixed;inset:0;z-index:50;overflow:hidden;background:#2A0A12;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:24px 20px calc(28px + env(safe-area-inset-bottom))}
+#intro:before{content:"";position:absolute;inset:-15%;filter:blur(40px);opacity:.85;background:radial-gradient(46% 24% at 80% 22%,#FFB38A,transparent 72%),radial-gradient(46% 26% at 20% 14%,#D2264E,transparent 72%),radial-gradient(44% 22% at 84% 50%,#F58CA6,transparent 72%),radial-gradient(54% 24% at 16% 46%,#7C68FA,transparent 74%)}
+#intro:after{content:"";position:absolute;inset:0;background:linear-gradient(to top,#20141A 300px,rgba(32,16,20,.9) 400px,transparent 520px)}
+#intro>*{position:relative;z-index:1}#intro .art{position:absolute;z-index:0;top:env(safe-area-inset-top);left:0;width:100%;height:calc(100% - 390px - env(safe-area-inset-top))}#intro h1{margin:0 0 16px;font-size:clamp(40px,13vw,52px);font-weight:300;line-height:1.05}
+#intro p{margin:0 0 10px;font-size:17px}#intro .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+#intro .chips span{border:1px solid rgba(255,255,255,.75);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700}
+#intro button:focus-visible{outline-color:#fff}#quote{position:fixed;inset:0;z-index:50;background:#fff;display:flex;flex-direction:column;justify-content:center;gap:40px;padding:calc(24px + env(safe-area-inset-top)) 20px calc(28px + env(safe-area-inset-bottom))}
+#quote p{margin:auto 0;text-align:center;text-transform:uppercase;font-size:clamp(34px,11.5vw,56px);font-weight:800;line-height:1.02;letter-spacing:-.03em}
+#quote button{min-height:56px;border:0;border-radius:999px;background:var(--ink);color:#fff;font-size:18px;font-weight:700;cursor:pointer}
+#frames .f{opacity:0;animation:run .8s steps(1) infinite}@keyframes run{0%{opacity:1}12.5%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){#frames .f{animation:none}#frames .f:first-child{opacity:1}}
+#intro .tag{color:#D9DBEA;margin-bottom:28px}#intro button{min-height:56px;border:0;border-radius:999px;background:#fff;font-size:18px;font-weight:700;cursor:pointer}
+.wrap{max-width:720px;margin:0 auto;padding:0 12px calc(96px + env(safe-area-inset-bottom));overflow-x:clip}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;background:#fff;border-top:1px solid var(--slate);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+.tabs button{flex:1;min-width:0;min-height:52px;padding:4px 0;border:0;background:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.tabs button.on{color:var(--ink)}.tabs button.on svg{stroke:var(--purple)}
+.card{background:var(--slate);border-radius:12px;padding:16px;margin:12px 0}
+.card h2{margin:0 0 8px;font-size:19px;font-weight:700}.card h3{margin:14px 0 6px;font-size:16px;font-weight:700}
+.muted{color:var(--muted);font-size:14px}.big{font-size:40px;font-weight:300;line-height:1.1;margin-bottom:10px}
+.pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:13px;font-weight:700;background:var(--tint)}
+.pill[class*="p-"]{background:var(--slate)}
+.p-plyo{--c:var(--red)}.p-mob{--c:var(--green)}.p-cardio{--c:var(--teal)}.p-lift{--c:var(--purple)}
+.bar{height:14px;background:#fff;border-radius:999px;overflow:hidden}.bar i{display:block;height:100%;border-radius:999px;background:var(--grad)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.lift{background:#fff;border-radius:8px;padding:12px}
+.lift b{font-size:22px}.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #fff}
+.row:last-child{border-bottom:0}
+button.bigbtn{width:100%;min-height:52px;padding:12px;border:0;border-radius:8px;background:var(--rough);background-size:320px,cover;color:#fff;font-size:19px;font-weight:700;cursor:pointer}
+button.ghost{width:100%;min-height:48px;padding:12px;border:1.5px solid var(--ink);border-radius:8px;background:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+input,select{width:100%;padding:12px;border:1.5px solid var(--mid);border-radius:8px;background:#fff;font-size:16px;margin:6px 0}
+label{font-size:14px;font-weight:700}
+.day{border-left:4px solid var(--purple);padding:10px 12px;background:#fff;margin:10px 0}
+.day .eyebrow{margin-top:0}.day b,.day .muted{display:block}.day.done .eyebrow:after{content:" · Done ✓"}
+details{background:#fff;border-radius:8px;padding:2px 12px;margin:8px 0}details[open]{padding-bottom:12px}
+details.card{background:var(--slate);border-radius:12px;padding:4px 16px;margin:8px 0}details.card[open]{padding-bottom:16px}
+summary{display:flex;align-items:center;gap:10px;min-height:48px;list-style:none;cursor:pointer;font-size:16px;font-weight:700}summary::-webkit-details-marker{display:none}
+summary b{margin-left:auto;text-align:right;font-size:14px;font-weight:300;color:var(--muted)}
+summary:after{content:"";flex:none;width:8px;height:8px;margin:-4px 4px 0;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg)}
+details[open]>summary:after{transform:rotate(-135deg);margin-top:4px}
+.grp{margin:22px 4px 6px;font-size:13px;font-weight:700;color:var(--muted)}
+.eyebrow{display:block;margin:14px 0 4px;font-size:13px;color:var(--muted)}
+.it{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}.it .muted{font-size:14px}.src{font-size:12px;color:var(--muted)}
+.sub{margin:0 0 10px}.loads{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 4px}.loads div{background:#fff;border-radius:8px;padding:8px 10px}
+.loads span{display:block;font-size:12px;color:var(--muted)}.loads b{font-size:17px}
+#workouts ul,#history{list-style:none;margin:0;padding:0}#flows ol{margin:0;padding-left:22px}
+#workouts li,#flows li,#history li{margin:0;padding:10px 0;border-top:1px solid var(--slate)}#history li{display:flex;align-items:center;gap:8px;border-color:#fff}
+#workouts h4{margin:14px 0 2px;font-size:13px;color:var(--muted)}#today h2{margin-bottom:2px}#today .eyebrow:first-child{margin-top:0}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:8px 6px;border-bottom:1px solid #fff;text-align:left}
+a{color:var(--ink)}ul{padding-left:20px}li{margin:6px 0}
+.tabpage{display:none}.tabpage.on{display:block;animation:slide .22s ease-out}@keyframes slide{from{opacity:0;transform:translateX(var(--from,0))}}
+@media (prefers-reduced-motion:reduce){.tabpage.on{animation:none}}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:0 0 12px;border:0;border-radius:12px;overflow:hidden;background:#1A1250;color:#fff;text-align:left;cursor:pointer}
+.tile img{display:block;width:100%;height:auto;margin-bottom:8px;pointer-events:none}.tile b{font-size:17px;padding:0 14px}.tile span{font-size:13px;color:#DAD6F5;padding:0 14px}
+.pager{display:flex;gap:8px;margin:16px 0 0}.pager .ghost{margin:0}.pager span{flex:1}
+.pill[class*="p-"]:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--c)}
+.donebtn{white-space:nowrap;min-height:44px;padding:10px 14px;border-radius:8px;border:1.5px solid var(--ink);background:#fff;font-size:14px;font-weight:700;cursor:pointer}
+.donebtn.is{background:var(--tint);border-color:var(--tint)}
+textarea{width:100%;padding:12px;border:1.5px solid var(--mid);border-radius:8px;background:#fff;font:14px ui-monospace,monospace;margin:6px 0}
+#logForm [class^="f-"]{display:none}#logForm.k-workout .f-workout,#logForm.k-lift .f-lift,#logForm.k-vert .f-vert,#logForm.k-run .f-run{display:block}
+.chk input{width:auto;margin-right:8px}.del{border:0;background:none;text-decoration:underline;font-size:13px;font-weight:700;min-height:44px;padding:8px 6px;cursor:pointer}
+#loadtable{overflow-x:auto}#loadtable th,#loadtable td{padding:8px 4px}
+.tick{display:flex;gap:10px;align-items:center;width:100%;min-height:48px;padding:10px 12px;margin:6px 0;border:0;border-radius:8px;background:#fff;font-size:15px;font-weight:300;text-align:left;cursor:pointer;line-height:1.3}
+.tick:before{content:"";flex:0 0 22px;height:22px;border:1.5px solid var(--ink);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.tick.is{background:var(--tint)}.tick.is:before{content:"✓";background:var(--ink);color:#fff}
+.rest{display:flex;gap:8px}.rest .donebtn{flex:1;padding:10px 4px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cal span{text-align:center;font-size:12px;color:var(--muted)}
+.cal button{min-height:40px;padding:0;border:1.5px solid transparent;border-radius:8px;background:#fff;font-size:14px;font-weight:300;cursor:pointer}
+.cal button.is{background:var(--tint);font-weight:700}.cal button.now{border-color:var(--ink)}
+#today .donebtn{width:100%;min-height:52px;font-size:19px;border:0;background:var(--rough);background-size:320px,cover;color:#fff}
+#today .donebtn.is{background:var(--tint);border-color:var(--tint);color:var(--ink)}
+</style>
+</head>
+<body>
+<div id="intro" role="dialog" aria-modal="true" aria-label="Baseline season" hidden>
+<svg class="art" viewBox="0 0 390 520" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+<defs>
+<linearGradient id="rg" gradientUnits="userSpaceOnUse" spreadMethod="repeat" x1="270" y1="130" x2="110" y2="460"><stop offset="0" stop-color="#FFD9B8"/><stop offset=".16" stop-color="#F58CA6"/><stop offset=".32" stop-color="#D2264E"/><stop offset=".46" stop-color="#3A0F4A"/><stop offset=".6" stop-color="#7C68FA"/><stop offset=".76" stop-color="#3EB7DE"/><stop offset=".9" stop-color="#F4E3D0"/><stop offset="1" stop-color="#FFD9B8"/><animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="-160 330" dur="3.2s" repeatCount="indefinite"/></linearGradient>
+<linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#7C68FA" stop-opacity="0"/><stop offset=".45" stop-color="#D2264E"/><stop offset="1" stop-color="#F58CA6" stop-opacity=".2"/></linearGradient>
+<filter id="r0" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".02 .04" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
+<filter id="r1" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".02 .04" seed="8" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
+<filter id="r2" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".02 .04" seed="15" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="4"/></filter>
+<filter id="smear" x="-80%" y="-20%" width="220%" height="140%"><feGaussianBlur stdDeviation="24 4"/></filter>
+</defs>
+<path d="M-30 468C100 462 270 472 420 464" fill="none" stroke="url(#gg)" stroke-width="18" stroke-linecap="round"/>
+<g id="frames" fill="none" stroke="url(#rg)" stroke-linecap="round" stroke-linejoin="round"></g>
+</svg>
+<h1>Baseline season</h1>
+<p class="chips"><span>Plyos</span><span>Mobility</span><span>Cardio</span><span>Lifting</span></p>
+<p id="introDay"></p>
+<p class="tag">1% better every day.</p>
+<button id="introGo">Start today</button>
+</div>
+<div id="quote" role="dialog" aria-modal="true" aria-label="Before you begin" hidden>
+<p id="quoteText"></p>
+<button id="quoteGo">Begin</button>
+</div>
+<header><div class="wrap" style="padding:0"><h1><span id="sub"></span>Baseline season</h1><div id="season"></div><p id="phase"></p></div></header>
+<div class="wrap">
+<nav class="tabs" id="tabs">
+<button data-tab="dash" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Dashboard</button><button data-tab="week"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v14H5zM5 11h14M9 3v4M15 3v4"/></svg>Week</button><button data-tab="workouts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6M7 6v12M17 6v12M20 9v6M7 12h10"/></svg>Workouts</button><button data-tab="flows"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9c3-4 6 4 9 0s6 4 9 0M3 15c3-4 6 4 9 0s6 4 9 0"/></svg>Flows</button><button data-tab="road"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4h11l-2 4 2 4H6"/></svg>Roadmap</button>
+</nav>
+
+<!-- DASHBOARD -->
+<section id="dash" class="tabpage on">
+<div class="card" id="today"></div>
+<details class="card" open><summary><span>Rest timer</span><b id="restOut" role="timer">0:00</b></summary><div class="rest"><button class="donebtn" data-rest="60">60 s</button><button class="donebtn" data-rest="90">90 s</button><button class="donebtn" data-rest="120">120 s</button><button class="donebtn" data-rest="0">Stop</button></div><p class="muted" id="restMsg" role="status"></p></details>
+<h2 class="grp">Train</h2>
+<div class="tiles" id="tiles"></div>
+<h2 class="grp">Progress</h2>
+<details class="card"><summary><span>Dunk</span><b id="sumDunk"></b></summary><div class="big" id="reach"></div><div class="bar"><i id="reachbar"></i></div><p class="muted" id="rimgap"></p><div class="row"><span>First 3 months</span><b>+2–3 in, cleaner landings</b></div><div class="row"><span>12 months</span><b>+6–8 in of vert, ball control</b></div><p class="muted">No dunk-by date. Week 12 is a retest.</p></details>
+<details class="card"><summary><span>Strength</span><b id="sumLift"></b></summary><div class="grid" id="lifts"></div></details>
+<details class="card"><summary><span>Running</span><b id="sumRun"></b></summary><div class="row"><span>5K</span><b id="r5K"></b></div><div class="row"><span>10K</span><b id="r10K"></b></div><p class="muted">5K time trial in Week 2. Retest both in Week 12.</p></details>
+<details class="card"><summary><span>This week</span><b id="donecount"></b></summary><p class="muted" id="weekTitle"></p><div id="strip"></div></details>
+<h2 class="grp">Log</h2>
+<details class="card"><summary><span>Add an entry</span><b>Workout, lift, vert, run</b></summary>
+<form id="logForm" class="k-workout" novalidate>
+<label>Type <select id="logType"><option value="workout">Workout</option><option value="lift">Lift</option><option value="vert">Vert test (jump reach)</option><option value="run">Run (5K / 10K)</option></select></label>
+<label>Date <input id="logDate" type="date"></label>
+<label class="f-workout">Label <input id="logLabel" placeholder="e.g. Mon Full A"></label>
+<label class="f-lift">Lift <select id="logLift"><option value="hang_clean_lb">Hang Clean</option><option value="squat_lb">Squat</option><option value="deadlift_lb">Deadlift</option></select></label>
+<label class="f-lift">Weight (lb) <input id="logWeight" type="number" inputmode="decimal" min="1" step="any"></label>
+<label class="f-lift chk"><input id="logMax" type="checkbox"> New tested max (recomputes loads)</label>
+<label class="f-vert">Jump reach, feet <input id="logFt" type="number" inputmode="numeric" min="7" max="12" value="9"></label>
+<label class="f-vert">Jump reach, inches <input id="logIn" type="number" inputmode="decimal" min="0" max="11.5" step="0.5"></label>
+<label class="f-run">Distance <select id="logDist"><option>5K</option><option>10K</option></select></label>
+<label class="f-run">Time <input id="logTime" inputmode="numeric" placeholder="mm:ss or h:mm:ss"></label>
+<label>Details <input id="logDetails" placeholder="e.g. 3x5, felt strong"></label>
+<button class="bigbtn">Log it</button></form>
+<p id="logMsg" class="muted" role="status"></p></details>
+<details class="card"><summary><span>History</span><b id="sumHist"></b></summary><ul id="history"></ul></details>
+<h2 class="grp">Settings</h2>
+<details class="card"><summary><span>Starting baselines</span><b id="sumBase"></b></summary><p class="muted">Progress is measured against these.</p>
+<label>Hang Clean (lb) <input id="bHC" type="number" inputmode="decimal"></label>
+<label>Squat (lb) <input id="bSQ" type="number" inputmode="decimal"></label>
+<label>Deadlift (lb) <input id="bDL" type="number" inputmode="decimal"></label>
+<button class="bigbtn" id="baseSave">Save baselines</button>
+<p id="baseMsg" class="muted" role="status"></p></details>
+<details class="card"><summary><span>Backup</span><b>On this phone only</b></summary><p class="muted">Copy a backup now and then. Keep it in Notes or email.</p>
+<label>Backup text <textarea id="bk" rows="3" placeholder="Paste a backup here to restore"></textarea></label>
+<button class="bigbtn" id="bkCopy">Copy backup</button><button class="ghost" id="bkRestore">Restore from text (replaces current data)</button>
+<p id="bkMsg" class="muted" role="status"></p></details>
+</section>
+
+<!-- WEEK -->
+<section id="week" class="tabpage">
+<div class="card"><h2>This week</h2><p class="muted">Hard days Mon, Wed, Fri, 48 hours apart. Other days are mobility, light plyos or recovery.</p><div id="weeklist"></div></div>
+<div class="card"><h2>Season</h2><p class="muted">12 weeks. Tap a day.</p><div class="cal" id="cal"></div><p id="calDetail" class="muted" role="status"></p></div>
+</section>
+
+<!-- WORKOUTS -->
+<section id="workouts" class="tabpage">
+<div class="card"><h2>Workouts</h2><p class="muted">Always in this order. No rest days.</p>
+<details open><summary><span class="pill p-plyo">Plyos</span><b>15–20 min</b></summary><ul>
+<li>Tendon prep — isometric split-squat hold, front heel elevated, 30 sec × 3/side, then same + small hops 3×12/side — @garagestrength</li>
+<li>Pogo / plate / line hops — 20–30 sec, 2–4 sets, 60–90 sec rest — @explorewithiris_</li>
+<li>Contrast — weighted calf raises → pogo jumps, short ground contacts — @gmaxperform</li>
+<li>Main jumps, pick 2–3: squat jumps, split squat jumps, hurdle jumps, box jumps, broad jumps — @zoe.lisha / @lgaugsburg</li>
+<li>Stop when landings get loud or sloppy — @charactiv</li></ul></details>
+<details><summary><span class="pill p-mob">Mobility</span><b>10 min</b></summary><ul>
+<li>Deficit lunge, Copenhagen dips, cable curtsy lunge, foam roller step-overs — @sarahtweedie.physio</li>
+<li>Cossack squats, half-kneeling KB windmills, single-arm offset deadlifts, renegade rows — @no.mad.fitness</li>
+<li>Ankle / hip / T-spine / shoulder prep — @vivonaflow</li></ul></details>
+<details><summary><span class="pill p-cardio">Cardio</span><b>15–25 min</b></summary><ul>
+<li>Bristol Method — rotate bike → rower, 20–30 min — @jtperformance__</li>
+<li>Hill sprints — 6–8 × 20–30 sec uphill, walk back — @gatelyy</li>
+<li>Easy run / ride / swim — 20–40 min, conversational pace</li>
+<li>Sprints — 4–6 × 30–60 m, full walk-back rest — @p_bair</li></ul></details>
+<details><summary><span class="pill p-lift">Lifting</span><b>30–40 min</b></summary>
+<h4>Session A · squat focus</h4><ul><li>Back / front squat</li><li>Bulgarian split squats</li><li>Romanian deadlifts</li><li>Single-leg step-ups</li><li>Copenhagen plank</li></ul>
+<h4>Session B · hinge / back</h4><ul><li>Hip thrust — 3×8</li><li>Leg press — 3×8</li><li>Weighted step-ups + shrimp squats — 3×8/leg</li><li>Back day — 2 sets each: chest-supported row, rack pull, pulldown / pull-ups, cable rows, lat pullover, reverse fly</li></ul>
+<h4>Olympic</h4><ul><li>Clean progression — Tall Clean → High Hang → Hang Clean → Full Clean — @trainwith.emma_</li><li>Split jerk — weight 50/50 — @maibritreynheim</li></ul>
+<h4>Core finisher · pick one</h4><ul><li>V-ups circuit — 25 / 15 / 10</li><li>Crunches / twists / leg raises circuit</li><li>Gymnast circuit</li></ul>
+</details></div>
+</section>
+
+<!-- FLOWS -->
+<section id="flows" class="tabpage">
+<div class="card"><h2>Flows</h2><p class="muted">15–25 min each.</p>
+<details open><summary><span>Flow A</span><b>Bounce + run drills</b></summary><ol><li>Pogo, plate, line hops — 20–30 sec, 2–4 sets — @explorewithiris_</li><li>Lower-leg circuit — pogo 30 reps, calf raises 20/leg — @wannagetfaster</li><li>Running drills — skips, backward running, ankling, bounding, build-up strides, 2×20 m — @thebarefootsprinter</li><li>Landing control — stop when landings get loud — @charactiv</li></ol></details>
+<details><summary><span>Flow B</span><b>Hip flow + ATG</b></summary><ol><li>ATG hip standards — incline pigeon, couch stretch, seated good morning, loaded butterfly, ATG split squat — @movementgems</li><li>5-min hip routine — 90/90 hip thrust 2×10/side, frog stretch + rotation 2×6/side — @nomusclepain_academy</li><li>Pick 2–3: deficit lunge, Copenhagen, Cossack squats, KB windmills</li></ol></details>
+<details><summary><span>Flow C</span><b>Power + contrast</b></summary><ol><li>Clean work — progression, or Power Clean EMOM ×1 for 12 min then ×3 for 6 min at 80% — @coachrandyf2 (80% of 135 lb = 108 lb)</li><li>Contrast — calf raises → pogo jumps, or KB swings + box jumps — @gmaxperform</li><li>Main jumps, pick 2 — @nicolerrrose</li><li>Rotational finish — KB rotational patterns, 2×8/side — @marcusfilly</li></ol></details>
+<details><summary><span>Not for daily use</span><b>4 drills</b></summary><ol><li>Achilles rehab plyo</li><li>Weighted single-leg jumps</li><li>Depth-drop hurdle hops — wait until landings are quiet for weeks</li><li>Murph — annual benchmark only</li></ol></details></div>
+</section>
+
+<!-- ROADMAP -->
+<section id="road" class="tabpage">
+<div class="card"><h2>Roadmap</h2><p class="muted">Months 1–3.</p>
+<table><tr><th>Phase</th><th>Weeks</th><th>Strength</th><th>Test</th></tr>
+<tr><td>Month 1 Foundation</td><td>1–4</td><td>60–70%</td><td>Vert Wk 1, 5K Wk 2</td></tr>
+<tr><td>Month 2 Build</td><td>5–8</td><td>70–80%</td><td>—</td></tr>
+<tr><td>Month 3 Strength + Power</td><td>9–12</td><td>80–90%</td><td>Retest all, Wk 12</td></tr></table>
+<h3>Loads from your current maxes</h3><div id="loadtable"></div>
+<h3>Starting prescriptions</h3>
+<table><tr><th></th><th>Squat 3×5</th><th>Deadlift 3×5</th><th>Hang Clean 5×3</th></tr>
+<tr><td>Month 1</td><td>145–155</td><td>210–225</td><td>80–95</td></tr>
+<tr><td>Month 2</td><td>170–180</td><td>245–260</td><td>100–108</td></tr>
+<tr><td>Month 3</td><td>180–200</td><td>260–290</td><td>108–120</td></tr></table>
+<p class="muted">In lb, from your starting baselines. After a new tested max, use the loads table.</p></div>
+</section>
+</div>
+<script>
+const KEY="baseline-season-v2",START="2026-11-16",RIM=120;
+const LIFTS={hang_clean_lb:"Hang Clean",squat_lb:"Squat",deadlift_lb:"Deadlift"};
+// Mon..Sun: title, detail, lifting day
+const WEEK=[["Full A — squat focus","Flow C, then Session A",1],["Easy — run + mobility","Easy run 20–30 min, mobility",0],["Plyo + Cardio","Flow A, then Bristol Method bike → rower 20–30 min",0],["Mobility + Light Plyos","Flow B, 30–45 min, low hops only",0],["Full B — hinge / back","Flow C, then Session B",1],["Long easy","Run / ride 30–45 min",0],["Active Recovery","Flow B short, walk / easy ride",0]];
+const FA=["Pogo, plate, line hops — 20–30 sec, 2–4 sets","Lower-leg circuit — pogo 30 reps, calf raises 20/leg","Running drills — 2×20 m","Landing control — stop when landings get loud"];
+const FB=["ATG hip standards","5-min hip routine — 90/90 hip thrust 2×10/side, frog stretch 2×6/side","Pick 2–3: deficit lunge, Copenhagen, Cossack squats, KB windmills"];
+const FC=["Clean work — progression or Power Clean EMOM","Contrast — calf raises → pogo jumps, or KB swings + box jumps","Main jumps — pick 2","Rotational finish — KB rotational patterns, 2×8/side"];
+const CORE="Core finisher — pick one";
+// Tap-to-complete steps for each day, Mon..Sun. A string starting with # is a group label, not a step.
+const ITEMS=[["#Flow C · power",...FC,"#Session A · squat","Back / front squat","Bulgarian split squats","Romanian deadlifts","Single-leg step-ups","Copenhagen plank","#Finish",CORE],["Easy run — 20–30 min","Mobility — 10 min"],["#Flow A · bounce",...FA,"#Cardio","Bristol Method — bike → rower, 20–30 min"],["#Flow B · hips",...FB,"#Plyos","Light plyos — low hops only"],["#Flow C · power",...FC,"#Session B · hinge / back","Hip thrust — 3×8","Leg press — 3×8","Weighted step-ups + shrimp squats — 3×8/leg","Back day — 2 sets each: chest-supported row, rack pull, pulldown / pull-ups, cable rows, lat pullover, reverse fly","#Finish",CORE],["Run / ride — 30–45 min, easy"],["Flow B — short","Walk / easy ride"]];
+const steps=wd=>ITEMS[wd].filter(x=>x[0]!=="#");
+// Shown after "Start today". Add lines here and the app shows a different one each day.
+const LINES=["What a privilege it is to be able to wake up and try again."];
+const TESTS={1:"Vert test this week",2:"5K time trial this week",12:"Retest week: vert, lifts, 5K and 10K"};
+let state={baselines:{hang_clean_lb:135,squat_lb:225,deadlift_lb:325,reach_in:114},done:{},ticks:{},logs:[]};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";");
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const day=s=>{const[y,m,d]=s.split("-");return new Date(y,m-1,d)};
+const plus=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+const nice=d=>d.toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"}).replace(",","");
+const ftin=n=>Math.floor(n/12)+"'"+(n%12)+'"';
+const secs=t=>t.split(":").reduce((a,x)=>a*60+ +x,0);
+const phase=w=>w<=4?["Month 1 Foundation",60,70]:w<=8?["Month 2 Build",70,80]:w<=12?["Month 3 Strength + Power",80,90]:["Build phase, months 4–12"];
+const pct=(v,p)=>Math.round(v*p/100);
+const cur=k=>Math.max(state.baselines[k],...state.logs.filter(l=>l.type==="lift"&&l.lift===k&&l.max).map(l=>l.weight));
+const say=(id,t)=>{$(id).textContent=t};
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s)adopt(s)}catch(e){}}
+function adopt(s){state={baselines:{...state.baselines,...s.baselines},done:{...s.done},ticks:{...s.ticks},logs:[...s.logs]}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){say("logMsg","Could not save on this device. Copy a backup below.")}}
+// "Name — detail — @source" (or "Name: detail") becomes a bold name, a muted detail line and a source tag
+function fmt(t){const p=t.split(" — "),src=p.length>1&&p[p.length-1][0]==="@"?p.pop():"";let name=p.shift();const i=name.indexOf(": ");if(i>0){p.unshift(name.slice(i+2));name=name.slice(0,i)}
+return `<span class="it">${(name.match(/,/g)||[]).length>1?esc(name):`<b>${esc(name)}</b>`}${p.length?`<span class="muted">${esc(p.join(" — "))}</span>`:""}${src?`<span class="src">${esc(src)}</span>`:""}</span>`}
+const doneBtn=d=>`<button class="donebtn${state.done[d]?" is":""}" data-done="${d}">${state.done[d]?"Done ✓":"Mark done"}</button>`;
+function render(){
+const now=new Date(),t=iso(now),days=Math.round((day(t)-day(START))/864e5),w=Math.max(1,Math.floor(days/7)+1),ph=phase(w),b=state.baselines;
+const mon=plus(day(START),7*(w-1)),dates=WEEK.map((_,i)=>plus(mon,i));
+say("sub",days<0?`Starts ${nice(day(START))}`:`Week ${w}${w<=12?" of 12":""}`);
+const wd=(now.getDay()+6)%7,td=WEEK[wd],tk=state.ticks[t]||[];let n=-1;
+const list=`<div role="group" aria-label="Today's steps">${ITEMS[wd].map(x=>x[0]==="#"?`<p class="eyebrow">${x.slice(1)}</p>`:(n++,`<button class="tick${tk.includes(n)?" is":""}" data-tick="${n}" aria-pressed="${tk.includes(n)}">${fmt(x)}</button>`)).join("")}</div><p class="muted">${tk.length} of ${n+1} steps done</p>`;
+const loads=ph[1]?`<div class="loads">${Object.keys(LIFTS).map(k=>`<div><span>${LIFTS[k]}</span><b>${pct(cur(k),ph[1])}–${pct(cur(k),ph[2])}</b></div>`).join("")}</div><p class="muted">Working range in lb, ${ph[1]}–${ph[2]}% of max.</p>`:"";
+// Before the start date the card still works, so a session can be tried out; those days sit outside the 84-day season.
+$("today").innerHTML=`<p class="eyebrow">${days<0?"Pre-season":"Today"} · ${nice(now)}</p><h2>${td[0]}</h2><p class="sub">${td[1]}</p>${days>=0&&TESTS[w]?`<p><span class="pill">${TESTS[w]}</span></p>`:""}${td[2]?loads:""}${list}${doneBtn(t)}`;
+const reach=Math.max(b.reach_in,...state.logs.filter(l=>l.type==="vert").map(l=>l.reach)),verts=state.logs.some(l=>l.type==="vert");
+say("reach",ftin(reach)+" reach");say("sumDunk",reach<RIM?`${ftin(reach)} · ${RIM-reach} in to rim`:`${ftin(reach)} · over the rim`);
+$("reachbar").style.width=Math.min(100,Math.max(4,(reach-b.reach_in)/(RIM-b.reach_in)*100))+"%";
+say("rimgap",(reach<RIM?`${RIM-reach} in to rim touch`:`${reach-RIM} in above the rim`)+` · baseline ${ftin(b.reach_in)} · rim 10'0"`);
+say("sumLift",Object.keys(LIFTS).map(cur).join(" · ")+" lb");say("sumBase",Object.keys(LIFTS).map(k=>b[k]).join(" · ")+" lb");say("sumHist",state.logs.length+(state.logs.length===1?" entry":" entries"));
+$("lifts").innerHTML=Object.keys(LIFTS).map(k=>{const c=cur(k),last=state.logs.filter(l=>l.type==="lift"&&l.lift===k).sort((x,y)=>x.date<y.date?1:-1)[0];
+return `<div class="lift"><div class="muted">${LIFTS[k]}</div><b>${c} lb</b><div class="muted">Baseline ${b[k]} lb${c>b[k]?` · +${c-b[k]} lb`:""}</div><div class="muted">${last?`Last: ${last.weight} lb · ${nice(day(last.date))}`:"No sets logged"}</div></div>`}).join("")
++`<div class="lift"><div class="muted">Jump reach</div><b>${verts?ftin(reach):"Not tested"}</b><div class="muted">${verts?`Baseline ${ftin(b.reach_in)} · +${reach-b.reach_in} in`:"Test in Week 1"}</div></div>`;
+for(const d of["5K","10K"]){const r=state.logs.filter(l=>l.type==="run"&&l.dist===d).sort((x,y)=>secs(x.time)-secs(y.time))[0];say("r"+d,r?`${r.time} · ${nice(day(r.date))}`:"Not tested yet");if(d==="5K")say("sumRun",r?"5K "+r.time:"Not tested")}
+say("weekTitle",`Week ${w}: ${nice(dates[0])} – ${nice(dates[6])}`);
+$("strip").innerHTML=dates.map((d,i)=>`<div class="row"><span class="it"><span class="src">${nice(d)}${iso(d)===t?" · today":""}</span><b>${WEEK[i][0]}</b></span>${doneBtn(iso(d))}</div>`).join("");
+say("donecount",dates.filter(d=>state.done[iso(d)]).length+" of 7 done");
+$("weeklist").innerHTML=dates.map((d,i)=>`<div class="day${state.done[iso(d)]?" done":""}"><span class="eyebrow">${nice(d)}</span><b>${WEEK[i][0]}</b><span class="muted">${WEEK[i][1]}</span></div>`).join("");
+$("loadtable").innerHTML=`<table><tr><th>Lift</th><th>Max</th><th>60%</th><th>70%</th><th>80%</th><th>90%</th></tr>${Object.keys(LIFTS).map(k=>`<tr><td>${LIFTS[k]}</td><td>${cur(k)}</td>${[60,70,80,90].map(p=>`<td>${pct(cur(k),p)}</td>`).join("")}</tr>`).join("")}</table>`;
+const line=l=>l.type==="lift"?`${LIFTS[l.lift]} ${l.weight} lb${l.max?" · new max":""}`:l.type==="vert"?`Vert test · reach ${ftin(l.reach)}`:l.type==="run"?`${l.dist} · ${l.time}`:esc(l.label||"Workout");
+$("history").innerHTML=state.logs.length?[...state.logs].sort((x,y)=>x.date<y.date?1:x.date>y.date?-1:y.id-x.id).slice(0,20).map(l=>`<li><span class="it"><b>${line(l)}</b><span class="muted">${nice(day(l.date))}${l.details?" · "+esc(l.details):""}</span></span><button class="del" data-del="${l.id}" aria-label="Delete entry">Delete</button></li>`).join(""):"<li class='muted'>Nothing logged yet.</li>";
+const s0=day(START);
+$("cal").innerHTML="MTWTFSS".split("").map(c=>`<span>${c}</span>`).join("")+Array.from({length:84},(_,i)=>{const d=plus(s0,i),k=iso(d);return `<button class="${state.done[k]?"is":""}${k===t?" now":""}" data-cal="${k}" aria-label="${nice(d)}${state.done[k]?", done":""}">${d.getDate()}</button>`}).join("");
+const dn=Array.from({length:84},(_,i)=>iso(plus(s0,i)));
+$("season").innerHTML=`<svg viewBox="0 0 358 28" preserveAspectRatio="none" role="img" aria-label="Season progress"><defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" x2="358"><stop offset="0" stop-color="#FA512E"/><stop offset=".5" stop-color="#7C68FA"/><stop offset="1" stop-color="#3EB7DE"/></linearGradient></defs>${dn.map((k,i)=>`<rect x="${i*4+Math.floor(i/7)*2}" y="${state.done[k]?0:6}" width="2" height="${state.done[k]?28:16}" rx="1" fill="${state.done[k]?"url(#g)":k===t?"#202020":"#C4C8DE"}"/>`).join("")}</svg>`;
+say("phase",(days<0?`In ${-days} day${days===-1?"":"s"}`:ph[0])+` · ${dn.filter(k=>state.done[k]).length} of 84 days done`);
+say("introDay",days<0?`Starts ${nice(s0)}. First session: ${WEEK[0][0]}.`:`Week ${w} · ${nice(now)} · ${td[0]}`);say("introGo",days<0?"See the plan":"Start today");
+if(calSel){const d=day(calSel),logs=state.logs.filter(l=>l.date===calSel);$("calDetail").innerHTML=`<b>${nice(d)} — ${WEEK[(d.getDay()+6)%7][0]}</b>${state.done[calSel]?" · Done":""}<br>${logs.length?logs.map(line).join("<br>"):"Nothing logged."}`}
+if(document.activeElement.tagName!=="INPUT"){$("bHC").value=b.hang_clean_lb;$("bSQ").value=b.squat_lb;$("bDL").value=b.deadlift_lb}
+}
+let calSel="",restEnd=0,restInt,ac;
+// shortcut: no alert when the phone is locked or on silent, upgrade to a native app if you need notifications
+function rest(s){clearInterval(restInt);say("restMsg","");if(!s)return say("restOut","0:00");
+try{ac=ac||new AudioContext()}catch(e){}
+restEnd=Date.now()+s*1000;
+const tick=()=>{const left=Math.max(0,Math.ceil((restEnd-Date.now())/1000));say("restOut",Math.floor(left/60)+":"+String(left%60).padStart(2,"0"));
+if(!left){clearInterval(restInt);say("restMsg","Rest over. Next set.");try{navigator.vibrate&&navigator.vibrate(300);const o=ac.createOscillator();o.frequency.value=880;o.connect(ac.destination);o.start();o.stop(ac.currentTime+.3)}catch(e){}}};
+tick();restInt=setInterval(tick,250)}
+$("logType").onchange=e=>{$("logForm").className="k-"+e.target.value};
+$("logForm").addEventListener("submit",e=>{e.preventDefault();
+const t=$("logType").value,l={id:Date.now()+Math.random(),type:t,date:$("logDate").value||iso(new Date()),details:$("logDetails").value.trim()};let err="";
+if(t==="workout"){l.label=$("logLabel").value.trim();if(!l.label&&!l.details)err="Add a label or details."}
+if(t==="lift"){l.lift=$("logLift").value;l.weight=+$("logWeight").value;l.max=$("logMax").checked;if(!(l.weight>0))err="Enter the weight in lb."}
+if(t==="vert"){l.reach=$("logFt").value*12+ +$("logIn").value;if(!(l.reach>=84&&l.reach<=156))err="Enter your jump reach, e.g. 9 ft 9 in."}
+if(t==="run"){l.dist=$("logDist").value;l.time=$("logTime").value.trim();if(!/^\d{1,3}(:[0-5]\d){1,2}$/.test(l.time))err="Enter the time as mm:ss or h:mm:ss."}
+if(err)return say("logMsg",err);
+state.logs.push(l);save();for(const i of["logLabel","logWeight","logIn","logTime","logDetails"])$(i).value="";$("logMax").checked=false;say("logMsg","Logged.");render()});
+document.addEventListener("click",e=>{const el=e.target.closest("button")||e.target,d=el.dataset;
+if(d.rest)rest(+d.rest);
+if(d.nav)go(d.nav);
+if(d.go){go("workouts");document.querySelectorAll("#workouts details").forEach(x=>{x.open=!!x.querySelector(".p-"+d.go)});document.querySelector("#workouts .p-"+d.go).scrollIntoView({block:"center"})}
+if(d.cal){calSel=d.cal;render()}
+if(d.tick){const t=iso(new Date()),i=+d.tick,a=state.ticks[t]||[];state.ticks[t]=a.includes(i)?a.filter(x=>x!==i):[...a,i];
+if(state.ticks[t].length===steps((new Date().getDay()+6)%7).length)state.done[t]=1;save();render()}
+if(d.done){state.done[d.done]?delete state.done[d.done]:state.done[d.done]=1;save();render()}
+if(d.del){if(!d.sure){d.sure=1;el.textContent="Tap again to delete";return}state.logs=state.logs.filter(l=>l.id!=d.del);save();render()}});
+$("baseSave").onclick=()=>{const v={hang_clean_lb:+$("bHC").value,squat_lb:+$("bSQ").value,deadlift_lb:+$("bDL").value};
+if(!Object.values(v).every(x=>x>0))return say("baseMsg","Enter a weight above 0 for each lift.");
+Object.assign(state.baselines,v);save();say("baseMsg","Baselines saved. Loads recomputed.");render()};
+$("bkCopy").onclick=async()=>{$("bk").value=JSON.stringify(state);$("bk").select();
+try{await navigator.clipboard.writeText($("bk").value);say("bkMsg","Backup copied. Paste it into Notes or an email to yourself.")}catch(e){say("bkMsg","Select the text above and copy it.")}};
+$("bkRestore").onclick=()=>{try{const s=JSON.parse($("bk").value);
+if(!s||!Array.isArray(s.logs)||!s.baselines||!s.done||!s.logs.every(l=>l&&/^\d{4}-\d\d-\d\d$/.test(l.date)))throw 0;
+adopt(s);save();render();say("bkMsg","Restored.")}catch(e){say("bkMsg","That is not a valid backup. Nothing changed.")}};
+// Sections: bottom tabs, previous / next buttons, and a sideways swipe all go through go(), which slides the new section in.
+const TABS=["dash","week","workouts","flows","road"],NAMES=["Dashboard","Week","Workouts","Flows","Roadmap"];
+function go(tab){const cur=TABS.indexOf(document.querySelector(".tabpage.on").id),to=TABS.indexOf(tab);if(to<0||to===cur)return;
+document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x.dataset.tab===tab));
+document.querySelectorAll(".tabpage").forEach(p=>p.classList.toggle("on",p.id===tab));
+$(tab).style.setProperty("--from",to>cur?"36px":"-36px");scrollTo(0,0)}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.tab)});
+TABS.forEach((t,i)=>$(t).insertAdjacentHTML("beforeend",`<div class="pager">${i?`<button class="ghost" data-nav="${TABS[i-1]}">← ${NAMES[i-1]}</button>`:"<span></span>"}${TABS[i+1]?`<button class="ghost" data-nav="${TABS[i+1]}">${NAMES[i+1]} →</button>`:"<span></span>"}</div>`));
+let sx=0,sy=0;
+addEventListener("touchstart",e=>{sx=e.changedTouches[0].clientX;sy=e.changedTouches[0].clientY},{passive:true});
+addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+if(Math.abs(dx)<70||Math.abs(dx)<2*Math.abs(dy)||!$("intro").hidden||!$("quote").hidden||e.target.closest("#loadtable,input,textarea,select"))return;
+go(TABS[TABS.indexOf(document.querySelector(".tabpage.on").id)+(dx<0?1:-1)])},{passive:true});
+// Section tiles use Reece's own pictograms (icons/tile-*.webp), recoloured to dark purple.
+$("tiles").innerHTML=[["plyo","Plyos","15–20 min"],["mob","Mobility","10 min"],["cardio","Cardio","15–25 min"],["lift","Lifting","30–40 min"]].map(([k,n,t])=>`<button class="tile" data-go="${k}"><img src="icons/tile-${k}.webp" alt="" width="360" height="360"><b>${n}</b><span>${t}</span></button>`).join("");
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)render()}); // roll over to the new day when the app is reopened
+document.querySelectorAll("#workouts li,#flows li").forEach(li=>{li.innerHTML=fmt(li.textContent)});
+load();$("logDate").value=iso(new Date());render();
+// Stop-motion runner: 8 poses built from joint angles, so limbs can only bend the way a body does.
+// Its gradient repeats and slides along the body, so bands of colour travel through the figure.
+// Each pair is [thigh, knee bend] in degrees; thigh is measured from straight down, + is forward.
+const RUN=[[25,15],[5,35],[-25,15],[-20,70],[0,105],[35,100],[55,70],[45,30]];
+function pose(f){
+const pt=(p,a,l)=>[p[0]+l*Math.sin(a*Math.PI/180),p[1]+l*Math.cos(a*Math.PI/180)],ln=(w,o,...ps)=>`<path d="M${ps.map(p=>p.map(Math.round)).join("L")}" stroke-width="${w}"${o?' opacity=".72"':""}/>`;
+const hip=[190,300+4*Math.cos(Math.PI*(f-1)/2)],sh=pt(hip,170,104),head=pt(sh,170,36);
+const leg=(g,o)=>{const[t,k]=RUN[g],kn=pt(hip,t,78),an=pt(kn,t-k,78);return ln(30,o,hip,kn)+ln(20,o,kn,an)+ln(13,o,an,pt(an,t-k+80,22))};
+const arm=(g,o)=>{const a=40*Math.cos(Math.PI*(g-2)/4),el=pt(sh,a,54);return ln(18,o,sh,el)+ln(13,o,el,pt(el,a+90,48))};
+const far=(f+4)%8,body=arm(far,1)+leg(far,1)+ln(44,0,hip,sh)+leg(f)+ln(14,0,sh,pt(sh,170,16))+`<circle cx="${Math.round(head[0])}" cy="${Math.round(head[1])}" r="20" fill="url(#rg)" stroke="none"/>`+arm(f);
+return `<g class="f" style="animation-delay:${(f-8)/10}s" filter="url(#r${f%3})"><g filter="url(#smear)" opacity=".5" transform="translate(-56 0)">${body}</g>${body}</g>`}
+$("frames").innerHTML=RUN.map((_,f)=>pose(f)).join("");
+if(matchMedia("(prefers-reduced-motion:reduce)").matches)document.querySelector("#rg animateTransform").remove(); // colour bands hold still too
+// Opening screen, once per launch
+const behind=[document.querySelector("header"),document.querySelector("body>.wrap")];let seen;try{seen=sessionStorage.getItem("bs-intro")}catch(e){}
+if(!seen){$("intro").hidden=false;behind.forEach(x=>x.inert=true);$("introGo").focus()}
+$("introGo").onclick=()=>{$("intro").hidden=true;say("quoteText",LINES[Math.floor(Date.now()/864e5)%LINES.length]);$("quote").hidden=false;$("quoteGo").focus()};
+$("quoteGo").onclick=()=>{$("quote").hidden=true;behind.forEach(x=>x.inert=false);try{sessionStorage.setItem("bs-intro",1)}catch(e){}};
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>

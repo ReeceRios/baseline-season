@@ -6,7 +6,7 @@ root = pathlib.Path(__file__).resolve().parent
 handler = lambda *a, **k: http.server.SimpleHTTPRequestHandler(*a, directory=str(root), **k)
 srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
-url = f"http://127.0.0.1:{srv.server_port}/index.html"
+url = f"http://127.0.0.1:{srv.server_port}/classic.html"
 shots = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else None
 
 def open_at(browser, when, width=390, state=None, intro=True):
