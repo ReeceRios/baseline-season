@@ -924,8 +924,7 @@ $("tix").addEventListener("keydown",e=>{if(e.key==="Escape"&&$("tixBack").classL
 // --- entry: runner on black, then the opening screen rises under it, then Start today lifts the curtain ---
 function enter(){
  const entry=$("entry"),wrap=$("wrap"),nav=$("nav");
- let seen=false;try{seen=!!sessionStorage.getItem("bs-intro2")}catch(e){}
- if(seen){entry.remove();return}
+ if(preview()){entry.remove();return} // the entry plays on every open; only the ticket preview link skips it
  const bottom=$("eBottom"),art=$("eArt"),runner=makeRunner(art);
  say("eDay",days<0?`Starts ${nice(day(START))} · first session: ${PLAN[0].title}`:`Week ${w} · ${nice(now)} · ${plan.title}`);
  wrap.inert=nav.inert=true;runner.start();
@@ -941,7 +940,6 @@ function enter(){
   setTimeout(()=>{if(stage===1)$("eGo").focus({preventScroll:true})},800);
  };
  const leave=()=>{if(stage===2)return;stage=2;clearTimeout(timer);wrap.inert=nav.inert=false;
-  try{sessionStorage.setItem("bs-intro2","1")}catch(e){}
   if(reduce){runner.stop();entry.remove();return}
   animate(entry,{y:"-100%"},{duration:.6,ease:[.7,0,.2,1]}).then(()=>{runner.stop();entry.remove()});
   animate(wrap,{opacity:[0,1],y:[36,0]},{duration:.6,delay:.12,ease:[.2,.8,.2,1]}).then(()=>{wrap.style.transform=""});
@@ -957,7 +955,9 @@ function enter(){
 function renderAll(){renderTop();paint();renderDash();renderProg()}
 $("logDate").value=T;
 draw();renderTop();renderDash();renderProg();
+const preview=()=>location.hash==="#ticket"; // …/#ticket opens the day-complete ticket straight away, for a look without finishing a day
 enter();
+if(preview())showTicket();addEventListener("hashchange",()=>{if(preview())showTicket()});
 // when the app is reopened on a new day, start that day fresh
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&iso(new Date())!==T)location.reload()});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});

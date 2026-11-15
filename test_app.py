@@ -53,7 +53,7 @@ with sync_playwright() as pw:
     ok("working range 60-70% of 225","135–158" in txt(p,"#panel"))
     p.click("[data-rest='60']"); p.wait_for_timeout(300); ok("rest timer runs",txt(p,"#restOut") in ("1:00","0:59"),txt(p,"#restOut"))
     p.reload(); p.wait_for_timeout(700)
-    ok("entry is once per session",p.locator("#entry").count()==0)
+    ok("entry plays again on every open",p.locator("#entry").count()==1 and p.is_visible("#eText")); start(p)
     ok("ticks survive reload",p.evaluate("JSON.parse(localStorage.getItem('baseline-season-v2')).t2['2026-11-16'].plyo.length")==4)
     p.click("#toggle"); p.wait_for_timeout(500)
     # finish the other three sections -> day done automatically
@@ -136,6 +136,11 @@ with sync_playwright() as pw:
         ok(f"ticket, {label}: canvas {'hidden' if nogl else 'drawn'}",(not t.is_visible("#tixC") and len(t.text_content("#tixText"))>3 and t.is_visible("#tixText")) if nogl else blue(t)>400)
         t.click("#tixBack"); t.wait_for_timeout(300); ok(f"ticket, {label}: returns",not t.is_visible("#tix") and t.is_visible("#t-dash")); ok(f"ticket, {label}: no errors",not t.errs,str(t.errs))
         t.context.close()
+    # the preview link opens the ticket directly and marks nothing done
+    v=b.new_context(viewport={"width":390,"height":844}).new_page(); v.goto(url+"#ticket"); v.wait_for_timeout(1500)
+    ok("preview link opens the ticket",v.is_visible("#tix") and v.locator("#entry").count()==0 and blue(v)>400)
+    ok("preview marks nothing done",v.evaluate("localStorage.getItem('baseline-season-v2')") in (None,"") or '"done":{}' in v.evaluate("localStorage.getItem('baseline-season-v2')"))
+    v.context.close()
     # sideways scroll, on a page with a running clock (a frozen clock also freezes the slide-in animation)
     r=b.new_context(viewport={"width":390,"height":844}).new_page(); r.goto(url); start(r); wide=[]
     for t in ("dash","prog","today","prog","dash"):

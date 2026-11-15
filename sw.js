@@ -1,5 +1,5 @@
 // Offline support. Bump CACHE when you want phones to drop old files at once.
-const CACHE = "baseline-season-24";
+const CACHE = "baseline-season-25";
 const SHELL = ["./", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png", "fonts/inter-tight.woff2", "vendor/motion.js", "icons/cloud.webp", "icons/fig-plyo.webp", "icons/fig-mob.webp", "icons/fig-cardio.webp", "icons/fig-lift.webp"];
 self.addEventListener("install", e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener("activate", e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));
