@@ -180,7 +180,7 @@ const got=i=>ticks[i].filter(Boolean).length, complete=i=>got(i)>=S[i].need;
 const pt=t=>[36+248*t, 28+48*t*(1-t)];
 $("reel").innerHTML=S.map(s=>`<img src="icons/tile-${s.k}.webp" alt="" width="360" height="360">`).join("");
 S.forEach((s,i)=>{const c=document.createElementNS(NS,"circle");const [x,y]=pt(i/3);c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",4.5);c.setAttribute("fill",s.c);c.setAttribute("stroke","rgba(255,255,255,.5)");$("dots").appendChild(c)});
-// --- entry: the gradient runner with a white wire-mesh runner drawn over it, about 1.8 s in all ---
+// --- entry: the gradient runner with a white wire-mesh runner drawn over it; runs 2.8 s, then fades ---
 // Each pair is [thigh, knee bend] in degrees; thigh is measured from straight down, + is forward.
 const RUN=[[25,15],[5,35],[-25,15],[-20,70],[0,105],[35,100],[55,70],[45,30]];
 function runner(f){
@@ -218,7 +218,7 @@ function enter(){
  const leave=()=>{if(left)return;left=true;clearTimeout(timer);
   animate(entry,{opacity:0,scale:1.04},{duration:.45,ease:"easeInOut"}).then(()=>entry.remove());
   animate(wrap,{opacity:[0,1],y:[14,0]},{duration:.5,delay:.1,ease:"easeOut"}).then(()=>{wrap.style.transform=""})};
- const timer=setTimeout(leave,1350);entry.addEventListener("click",leave);
+ const timer=setTimeout(leave,2800);entry.addEventListener("click",leave);
 }
 enter();
 
