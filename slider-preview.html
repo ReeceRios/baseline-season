@@ -22,19 +22,19 @@ button{font:inherit;color:inherit}
 .chip span{font-size:11px;color:var(--muted)}.chip b{font-size:17px;line-height:22px}.chip b small{font-size:13px;font-weight:400;color:var(--muted)}
 /* card */
 .card{background:var(--deep);color:#fff;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
-.view{overflow:hidden;touch-action:pan-y}
+.view{overflow:hidden;touch-action:pan-y;margin:10px 10px 0;border:6px solid rgba(255,255,255,.16);border-radius:18px;background:rgba(255,255,255,.06)}
 .reel{display:flex;will-change:transform}
-.reel img{flex:none;display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+.reel img{flex:none;display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;pointer-events:none;-webkit-user-drag:none;border-radius:12px;will-change:transform}
 .slider{display:block;margin:10px 14px 0;touch-action:none;cursor:grab;border-radius:40px;outline:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 .slider:active{cursor:grabbing}
-.slider:focus-visible{box-shadow:0 0 0 3px #fff}
+.slider:focus-visible{box-shadow:0 0 0 2px rgba(255,255,255,.75)}
 .slider svg{display:block;width:100%;height:auto;overflow:visible}
-.slider text{font:700 15px "DM Sans",Arial,sans-serif;fill:var(--night)}
+.slider text{font:700 15px "DM Sans",Arial,sans-serif}
 .label{padding:4px 18px 16px;text-align:center}
 .label b{display:block;font-size:26px;line-height:30px;letter-spacing:.02em}
 .label span{font-size:13px;color:var(--soft)}
 /* steps toggle takes the category colour */
-.toggle{height:52px;border:0;border-radius:14px;background:var(--c);color:var(--night);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;cursor:pointer;transition:background .2s}
+.toggle{height:52px;border:0;border-radius:14px;background:#CFC7FE;color:var(--night);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;cursor:pointer}
 .toggle svg{transition:transform .2s}.toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
 .panel{background:var(--slate);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
 .panel[hidden]{display:none}
@@ -42,6 +42,8 @@ button{font:inherit;color:inherit}
 .loads div{background:#fff;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column}.loads span{font-size:11px;color:var(--muted)}.loads b{font-size:15px}
 .note{font-size:12px;color:var(--muted);margin:0}
 .row{display:flex;align-items:center;gap:4px;background:#fff;border-radius:10px;padding:4px 4px 4px 12px}
+.panel.enter>*{animation:rowIn .26s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*35ms)}
+@keyframes rowIn{from{opacity:0;transform:translateY(8px)}}
 .row label{flex:1;display:flex;align-items:flex-start;gap:12px;padding:8px 0;cursor:pointer;min-width:0}
 .row input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--purple)}
 .row .t{display:flex;flex-direction:column;gap:2px}.row .t b{font-size:15px}.row .t span{font-size:13px;color:var(--muted)}
@@ -51,20 +53,20 @@ button{font:inherit;color:inherit}
 .timer button{height:44px;padding:0 12px;border:1px solid var(--muted);border-radius:10px;background:#fff;font-weight:700;cursor:pointer}
 .tag{align-self:center;font-size:12px;color:var(--muted)}
 /* video sheet */
-.scrim{position:fixed;inset:0;background:rgba(16,12,40,.55);opacity:0;pointer-events:none;transition:opacity .2s}
-.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(110%);visibility:hidden;display:flex;flex-direction:column;gap:12px;max-height:100dvh;overflow-y:auto}
+.scrim{position:fixed;inset:0;background:rgba(16,12,40,.45);opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;background:rgba(246,245,255,.86);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4);border:1px solid rgba(255,255,255,.7);border-bottom:0;box-shadow:0 -12px 40px rgba(16,12,40,.25);border-radius:22px 22px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));opacity:0;visibility:hidden;display:flex;flex-direction:column;gap:12px;max-height:100dvh;overflow-y:auto}
 body.sheet-open .scrim{opacity:1;pointer-events:auto}
 .grab{align-self:center;width:40px;height:5px;border-radius:3px;background:#D5D8E8}
 .sh{display:flex;align-items:flex-start;gap:12px}.sh div{flex:1}.sh b{display:block;font-size:17px}.sh span{font-size:13px;color:var(--muted)}
-.x{width:44px;height:44px;border:0;border-radius:50%;background:var(--slate);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
-.vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}
+.x{width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.5);transform-origin:50% 50%}
 .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.chips::-webkit-scrollbar{display:none}
 .vchip{flex:none;height:36px;padding:0 14px;border:1px solid #C9CDE3;border-radius:999px;background:#fff;font-size:14px;cursor:pointer;white-space:nowrap}
 .vchip[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
 .credit{font-size:12px;color:var(--muted)}
 @media (orientation:landscape) and (max-height:520px){.wrap{max-width:720px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);align-items:start}.top,.tag{grid-column:1/-1}.card{grid-row:span 2}.vid{width:min(100%,calc((100dvh - 170px)*16/9));align-self:center}}
-@media (prefers-reduced-motion:reduce){.scrim,.toggle,.toggle svg{transition:none}}
+@media (prefers-reduced-motion:reduce){.scrim,.toggle svg{transition:none}.panel.enter>*{animation:none}}
 </style>
 </head>
 <body>
@@ -82,13 +84,13 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}
         <path d="M36 28Q160 52 284 28" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="54" stroke-linecap="round"/>
         <path d="M36 28Q160 52 284 28" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2" stroke-dasharray="2 9" stroke-linecap="round"/>
         <g id="dots"></g>
-        <g id="knob"><circle r="22" id="knobC"/><text id="knobT" text-anchor="middle" dy="5"></text><path id="knobK" d="M-7 0.5l4.5 4.5L7.5-5" fill="none" stroke="#100C28" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+        <g id="knob"><g id="knobIn"><circle r="22" id="knobC" stroke="rgba(255,255,255,.55)" stroke-width="2"/><text id="knobT" text-anchor="middle" dy="5"></text><path id="knobK" d="M-7 0.5l4.5 4.5L7.5-5" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></g></g>
       </svg>
     </div>
     <div class="label" aria-live="polite"><b id="name"></b><span id="sub"></span></div>
   </div>
 
-  <button class="toggle" id="toggle" type="button" aria-expanded="false" aria-controls="panel"><span id="toggleText"></span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="#100C28" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <button class="toggle" id="toggle" type="button" aria-expanded="false" aria-controls="panel"><span id="toggleText"></span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   <div class="panel" id="panel" hidden></div>
   <span class="tag">Preview · sample day · slide, swipe the picture, or tap a dot</span>
 </div>
@@ -123,21 +125,21 @@ const V={
 };
 // The four sections, always in this order. `need` = steps to tick before the section counts as done.
 const S=[
- {k:"plyo",name:"Plyos",sub:"Flow C · power · 15–20 min",c:"#7C68FA",need:4,steps:[
+ {k:"plyo",name:"Plyos",sub:"Flow C · power · 15–20 min",c:"#CFC7FE",need:4,steps:[
   ["Clean work","progression or Power Clean EMOM","clean"],
   ["Contrast","calf raises → pogo jumps, or KB swings + box jumps","contrast"],
   ["Main jumps","pick 2","jumps"],
   ["Rotational finish","KB rotational patterns, 2×8/side","rot"]]},
- {k:"mob",name:"Mobility",sub:"10 min",c:"#3EB7DE",need:3,steps:[
+ {k:"mob",name:"Mobility",sub:"10 min",c:"#A093FB",need:3,steps:[
   ["Lunge set","deficit lunge, Copenhagen dips, cable curtsy lunge, foam roller step-overs","mobA"],
   ["Strength set","Cossack squats, half-kneeling KB windmills, single-arm offset deadlifts, renegade rows","mobB"],
   ["Joint prep","ankle / hip / T-spine / shoulder","mobC"]]},
- {k:"cardio",name:"Cardio",sub:"15–25 min · pick one",c:"#FA512E",need:1,steps:[
+ {k:"cardio",name:"Cardio",sub:"15–25 min · pick one",c:"#6451E8",need:1,steps:[
   ["Bristol Method","rotate bike → rower, 20–30 min",null],
   ["Hill sprints","6–8 × 20–30 sec uphill, walk back","hill"],
   ["Easy run / ride / swim","20–40 min, conversational pace",null],
   ["Sprints","4–6 × 30–60 m, full walk-back rest","sprint"]]},
- {k:"lift",name:"Lifting",sub:"Session B · hinge / back · 30–40 min",c:"#608C84",need:5,loads:true,steps:[
+ {k:"lift",name:"Lifting",sub:"Session B · hinge / back · 30–40 min",c:"#3A2BA8",need:5,loads:true,steps:[
   ["Hip thrust","3×8","hip"],
   ["Leg press","3×8","legpress"],
   ["Weighted step-ups + shrimp squats","3×8/leg","stepup"],
@@ -154,25 +156,35 @@ const got=i=>ticks[i].filter(Boolean).length, complete=i=>got(i)>=S[i].need;
 // --- slider: knob rides a curved track; t in 0..1, pos in 0..3 ---
 const pt=t=>[36+248*t, 28+48*t*(1-t)];
 $("reel").innerHTML=S.map(s=>`<img src="icons/tile-${s.k}.webp" alt="" width="360" height="360">`).join("");
-S.forEach((s,i)=>{const c=document.createElementNS(NS,"circle");const [x,y]=pt(i/3);c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",4.5);c.setAttribute("fill",s.c);$("dots").appendChild(c)});
+S.forEach((s,i)=>{const c=document.createElementNS(NS,"circle");const [x,y]=pt(i/3);c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",4.5);c.setAttribute("fill",s.c);c.setAttribute("stroke","rgba(255,255,255,.5)");$("dots").appendChild(c)});
 let pos=0,idx=0,target=0; // target = where the knob is heading, so quick repeat presses add up
 const SPRING={type:"spring",visualDuration:.3,bounce:.2};
 const mv=motionValue(0);
+const RGB=S.map(s=>[1,3,5].map(i=>parseInt(s.c.slice(i,i+2),16)));
+const imgs=[...$("reel").children],knobEl=$("knob"),knobC=$("knobC"),reel=$("reel"),toggle=$("toggle");
+let lightText=null;
 function draw(){
- const [x,y]=pt(pos/3); $("knob").setAttribute("transform",`translate(${x} ${y})`);
- $("reel").style.transform=`translateX(${-pos*100}%)`;
+ const t=pos/3; knobEl.setAttribute("transform",`translate(${36+248*t} ${28+48*t*(1-t)})`);
+ reel.style.transform=`translateX(${-pos*100}%)`;
+ // the picture arriving grows to full size; the ones either side sit a little smaller
+ for(let i=0;i<4;i++){const d=Math.min(1,Math.abs(i-pos));imgs[i].style.transform=`scale(${1-.1*d})`;imgs[i].style.opacity=1-.45*d}
+ // colour deepens continuously from the first stop to the last
+ const a=Math.min(2,Math.floor(pos)),f=pos-a,A=RGB[a],B=RGB[a+1];
+ const col=`rgb(${Math.round(A[0]+(B[0]-A[0])*f)},${Math.round(A[1]+(B[1]-A[1])*f)},${Math.round(A[2]+(B[2]-A[2])*f)})`;
+ knobC.setAttribute("fill",col); toggle.style.background=col;
+ const lt=pos>=1.5;
+ if(lt!==lightText){lightText=lt;const ink=lt?"#fff":"#100C28";toggle.style.color=ink;$("knobT").setAttribute("fill",ink);$("knobK").setAttribute("stroke",ink)}
  const near=Math.round(pos);
- if(near!==idx||!$("name").textContent){idx=near;paint()}
+ if(near!==idx||!$("name").textContent){const dir=Math.sign(near-idx);idx=near;paint(true,dir)}
 }
-function paint(){
+function paint(changed,dir=0){
  const s=S[idx],done=complete(idx);
- document.documentElement.style.setProperty("--c",s.c);
- $("knobC").setAttribute("fill",s.c);
  $("knobT").textContent=done?"":idx+1; $("knobK").style.display=done?"":"none";
  $("name").textContent=s.name.toUpperCase(); $("sub").textContent=s.sub;
  $("slider").setAttribute("aria-valuenow",idx+1); $("slider").setAttribute("aria-valuetext",s.name);
  $("toggleText").textContent=`${s.name} steps · ${done?"done":s.need===1?"pick one":got(idx)+" of "+s.need}`;
- renderPanel();
+ renderPanel(changed);
+ if(changed&&dir&&!reduce)animate(".label",{opacity:[0,1],x:[14*dir,0]},{duration:.24,ease:"easeOut"});
  const all=S.every((_,i)=>complete(i)); if(all)$("dayCheck").setAttribute("aria-pressed","true");
 }
 mv.on("change",v=>{pos=Math.max(0,Math.min(3,v));draw()}); // the spring may overshoot; the knob stays on the track
@@ -182,11 +194,13 @@ function go(to,velocity=0){
  animate(mv,to,{...SPRING,velocity});
 }
 const sl=$("slider");let drag=false,moved=false;
+const ks=motionValue(1);ks.on("change",v=>$("knobIn").setAttribute("transform",`scale(${v})`));
+const grip=on=>{if(!reduce)animate(ks,on?1.14:1,{type:"spring",visualDuration:.2,bounce:.3})};
 const fromX=e=>{const r=sl.querySelector("svg").getBoundingClientRect();return Math.max(0,Math.min(1,((e.clientX-r.left)/r.width*320-36)/248))*3};
 let downX=0;
-sl.addEventListener("pointerdown",e=>{drag=true;moved=false;downX=e.clientX;sl.setPointerCapture(e.pointerId)});
+sl.addEventListener("pointerdown",e=>{drag=true;moved=false;downX=e.clientX;sl.setPointerCapture(e.pointerId);grip(true)});
 sl.addEventListener("pointermove",e=>{if(!drag)return;if(!moved&&Math.abs(e.clientX-downX)<4)return;if(!moved){moved=true;mv.stop()}mv.set(fromX(e))});
-const end=e=>{if(!drag)return;drag=false;if(!moved){go(Math.round(fromX(e)));return}const v=Math.max(-8,Math.min(8,mv.getVelocity()));go(Math.round(pos+Math.max(-.6,Math.min(.6,v*.12))),v)};
+const end=e=>{if(!drag)return;drag=false;grip(false);if(!moved){go(Math.round(fromX(e)));return}const v=Math.max(-8,Math.min(8,mv.getVelocity()));go(Math.round(pos+Math.max(-.6,Math.min(.6,v*.12))),v)};
 sl.addEventListener("pointerup",end);sl.addEventListener("pointercancel",end);
 sl.addEventListener("keydown",e=>{const d={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];if(d){e.preventDefault();go(target+d)}else if(e.key==="Home"){e.preventDefault();go(0)}else if(e.key==="End"){e.preventDefault();go(3)}});
 // Swiping the picture moves one section at a time.
@@ -195,18 +209,20 @@ $("view").addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy0=e.touche
 $("view").addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy0;sx=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5)go(target+(dx<0?1:-1))});
 
 // --- steps panel ---
-function renderPanel(){
- const s=S[idx];
+function renderPanel(enter){
+ const s=S[idx],pn=$("panel");
  const loads=s.loads?`<div class="loads"><div><span>Hang Clean</span><b>81–95</b></div><div><span>Squat</span><b>135–158</b></div><div><span>Deadlift</span><b>195–228</b></div></div><p class="note">Working range in lb, 60–70% of max.</p>`:"";
  const rows=s.steps.map(([n,d,v],i)=>`<div class="row"><label><input type="checkbox" data-i="${i}" ${ticks[idx][i]?"checked":""}><span class="t"><b>${n}</b><span>${d}</span></span></label>${v?`<button class="play" type="button" data-v="${v}" data-n="${n}" aria-label="Watch: ${n}">${PLAY}</button>`:""}</div>`).join("");
  const timer=s.loads?`<div class="timer"><span>Rest <b id="restOut"></b></span><button type="button" data-rest="60">60 s</button><button type="button" data-rest="90">90 s</button><button type="button" data-rest="120">120 s</button></div>`:"";
- $("panel").innerHTML=loads+rows+timer; showRest();
+ pn.innerHTML=loads+rows+timer; showRest();
+ for(let i=0;i<pn.children.length;i++)pn.children[i].style.setProperty("--i",i);
+ pn.classList.remove("enter");if(enter&&!reduce){void pn.offsetWidth;pn.classList.add("enter")}
 }
 $("toggle").onclick=()=>{
  const open=$("toggle").getAttribute("aria-expanded")!=="true",pn=$("panel");
  $("toggle").setAttribute("aria-expanded",String(open));
  if(reduce){pn.hidden=!open;return}
- if(open){pn.hidden=false;const h=pn.offsetHeight;pn.style.overflow="hidden";
+ if(open){pn.hidden=false;pn.classList.remove("enter");void pn.offsetWidth;pn.classList.add("enter");const h=pn.offsetHeight;pn.style.overflow="hidden";
   animate(pn,{height:[0,h],opacity:[0,1]},{duration:.28,ease:"easeOut"}).then(()=>{pn.style.height=pn.style.overflow=pn.style.opacity=""});}
  else{pn.style.overflow="hidden";
   animate(pn,{height:[pn.offsetHeight,0],opacity:0},{duration:.2,ease:"easeIn"}).then(()=>{if($("toggle").getAttribute("aria-expanded")!=="true")pn.hidden=true;pn.style.height=pn.style.overflow=pn.style.opacity=""});}
@@ -226,12 +242,25 @@ let cur=null,lastFocus=null;
 const sheet=$("sheet"),sy=motionValue(0),SHEET={type:"spring",visualDuration:.35,bounce:.15};
 sy.on("change",v=>{sheet.style.transform=`translateY(${Math.max(0,v)}px)`});
 const moveSheet=(to,velocity=0)=>reduce?(sy.jump(to),Promise.resolve()):animate(sy,to,{...SHEET,velocity});
+const vidEl=$("vid");
+// Where the video has to start (or end) so that it sits exactly on the tapped play button.
+function fromButton(btn){
+ const f=btn.getBoundingClientRect(),t=vidEl.getBoundingClientRect(),sc=f.height/t.height;
+ return {x:f.left+f.width/2-(t.left+t.width/2),y:f.top+f.height/2-(t.top+t.height/2),scale:sc,radius:`${f.height/2/sc}px`};
+}
 function openSheet(name,key,from){
  cur={name,list:V[key]};lastFocus=from;$("shTitle").textContent=name;
  $("chips").innerHTML=cur.list.length>1?cur.list.map(([,l],i)=>`<button class="vchip" type="button" data-i="${i}" aria-pressed="false">${l}</button>`).join(""):"";
  $("chips").hidden=cur.list.length<2;show(0);
  document.body.classList.add("sheet-open");sheet.setAttribute("aria-hidden","false");sheet.style.visibility="visible";
- sy.jump(sheet.offsetHeight+40);moveSheet(0);$("shClose").focus({preventScroll:true});
+ sy.jump(0);$("shClose").focus({preventScroll:true});
+ const dot=from&&from.querySelector("i");
+ if(reduce||!dot){sheet.style.opacity=1;return}
+ const o=fromButton(dot);
+ sheet.style.overflow="visible"; // lets the video start outside the panel, on the button
+ animate(sheet,{opacity:[0,1]},{duration:.18,ease:"easeOut"});
+ animate(vidEl,{x:[o.x,0],y:[o.y,0],scale:[o.scale,1],borderRadius:[o.radius,"12px"]},{type:"spring",visualDuration:.42,bounce:.16}).then(()=>{sheet.style.overflow=""});
+ animate(".sh, .chips, .credit",{opacity:[0,1],y:[10,0]},{duration:.26,delay:.12,ease:"easeOut"});
 }
 function show(i){
  const [id,label,ch]=cur.list[i];
@@ -241,9 +270,16 @@ function show(i){
  $("vid").innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1" title="${label} — ${ch}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
 }
 function closeSheet(v){
+ if(!document.body.classList.contains("sheet-open"))return;
  document.body.classList.remove("sheet-open");sheet.setAttribute("aria-hidden","true");
- $("vid").innerHTML=""; // removing the iframe stops playback
- moveSheet(sheet.offsetHeight+40,typeof v==="number"?v:0).then(()=>{if(!document.body.classList.contains("sheet-open"))sheet.style.visibility="hidden"});
+ vidEl.innerHTML=""; // removing the iframe stops playback
+ const hide=()=>{if(document.body.classList.contains("sheet-open"))return;sheet.style.visibility="hidden";sheet.style.opacity=0;sheet.style.overflow="";sy.jump(0);if(!reduce)animate(vidEl,{x:0,y:0,scale:1,borderRadius:"12px"},{duration:0})};
+ const dot=lastFocus&&lastFocus.isConnected&&lastFocus.querySelector("i");
+ if(typeof v==="number")moveSheet(sheet.offsetHeight+40,v).then(hide); // dragged away: it keeps falling
+ else if(reduce||!dot)hide();
+ else{const o=fromButton(dot);sheet.style.overflow="visible";
+  animate(vidEl,{x:o.x,y:o.y,scale:o.scale,borderRadius:o.radius},{duration:.26,ease:[.4,0,.7,.2]});
+  animate(sheet,{opacity:0},{duration:.2,delay:.08,ease:"easeIn"}).then(hide);}
  if(lastFocus)lastFocus.focus({preventScroll:true});
 }
 $("shClose").onclick=closeSheet;$("scrim").onclick=closeSheet;
