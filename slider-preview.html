@@ -7,12 +7,13 @@
 <title>Today, slider — preview</title>
 <style>
 @font-face{font-family:"DM Sans";src:url("fonts/dm-sans.woff2") format("woff2");font-weight:100 1000;font-display:swap}
-:root{--ink:#202020;--purple:#7C68FA;--slate:#EDEFF9;--muted:#606891;--deep:#1A1250;--soft:#DAD6F5;--night:#100C28;--c:#7C68FA}
+:root{--rough:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='a' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .018' numOctaves='5' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 3.4 0 0 0 -1.62'/%3E%3C/filter%3E%3Cfilter id='b' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.6 0 0 0 -.72'/%3E%3C/filter%3E%3Crect width='320' height='320' filter='url%28%23a%29' opacity='.34'/%3E%3Crect width='320' height='320' filter='url%28%23b%29' opacity='.2'/%3E%3C/svg%3E"),linear-gradient(155deg,#4B3BC4,#2A1E7A 55%,#1A1250);--ink:#202020;--purple:#7C68FA;--slate:#EDEFF9;--muted:#606891;--deep:#1A1250;--soft:#DAD6F5;--night:#100C28;--c:#7C68FA}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:#fff;color:var(--ink);font:15px/1.4 "Arial Nova","DM Sans",Arial,sans-serif}
 button{font:inherit;color:inherit}
-.wrap{max-width:440px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.wrap{max-width:440px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(100px + env(safe-area-inset-bottom))}
+.page{display:flex;flex-direction:column;gap:12px}.page[hidden]{display:none}
 /* top row: day check, week, day */
 .top{display:flex;align-items:stretch;gap:8px}
 .daycheck{flex:none;width:52px;border:2px solid var(--ink);border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -22,7 +23,7 @@ button{font:inherit;color:inherit}
 .chip span{font-size:11px;color:var(--muted)}.chip b{font-size:17px;line-height:22px}.chip b small{font-size:13px;font-weight:400;color:var(--muted)}
 /* card */
 .card{background:var(--deep);color:#fff;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
-.view{overflow:hidden;touch-action:pan-y;margin:10px 10px 0;border:6px solid rgba(255,255,255,.16);border-radius:18px;background:rgba(255,255,255,.06)}
+.view{overflow:hidden;touch-action:pan-y;margin:10px 10px 0;border:6px solid rgba(255,255,255,.16);border-radius:18px;background:var(--rough);background-size:cover,cover}
 .reel{display:flex;will-change:transform}
 .reel img{flex:none;display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;pointer-events:none;-webkit-user-drag:none;border-radius:12px;will-change:transform}
 .slider{display:block;margin:10px 14px 0;touch-action:none;cursor:grab;border-radius:40px;outline:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
@@ -59,18 +60,56 @@ button{font:inherit;color:inherit}
 .burst b{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;border:2px solid}
 #toggleCount{display:inline-block}
 /* entry: black screen, runner, then the main screen fades in */
-#entry{position:fixed;inset:0;z-index:20;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer}
-#entry svg{width:min(80vw,340px,52vh);height:auto;overflow:visible}
-#entry p{margin:0;color:#fff;font-size:30px;font-weight:700;letter-spacing:.01em}
-#eTitle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#fff;opacity:0}
-#eTitle b{font-size:40px;line-height:44px;font-weight:700;letter-spacing:-.01em}
-#eTitle i{display:block;width:132px;height:4px;border-radius:2px;background:linear-gradient(90deg,#F58CA6,#7C68FA 55%,#3EB7DE);transform-origin:0 50%}
-#eTitle span{font-size:16px;color:#DAD6F5}
+#entry{position:fixed;inset:0;z-index:20;overflow:hidden;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+#entry .glow{position:absolute;inset:0;opacity:0;background:#2A0A12}
+#entry .glow:before{content:"";position:absolute;inset:-15%;filter:blur(40px);opacity:.85;background:radial-gradient(46% 24% at 80% 22%,#FFB38A,transparent 72%),radial-gradient(46% 26% at 20% 14%,#D2264E,transparent 72%),radial-gradient(44% 22% at 84% 50%,#F58CA6,transparent 72%),radial-gradient(54% 24% at 16% 46%,#7C68FA,transparent 74%)}
+#entry .glow:after{content:"";position:absolute;inset:0;background:linear-gradient(to top,#20141A 300px,rgba(32,16,20,.9) 400px,transparent 520px)}
+#entry svg{position:relative;width:min(80vw,340px,52vh);height:auto;overflow:visible}
+#entry #eText{position:relative;margin:0;font-size:30px;font-weight:700;letter-spacing:.01em}
+#eBottom{position:absolute;left:0;right:0;bottom:0;max-width:480px;margin:0 auto;padding:24px 20px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;visibility:hidden}
+#eBottom h1{margin:0 0 16px;font-size:clamp(40px,13vw,52px);font-weight:300;line-height:1.05}
+#eBottom p{margin:0 0 10px;font-size:17px}#eBottom .eTag{color:#D9DBEA;margin-bottom:28px}
+.ePills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}.ePills span{border:1px solid rgba(255,255,255,.75);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700}
+#eGo{min-height:56px;border:0;border-radius:999px;background:#fff;color:#202020;font-size:18px;font-weight:700;cursor:pointer;transition:transform .18s cubic-bezier(.3,1.5,.5,1)}#eGo:active{transform:scale(.97)}
 #entry .f{opacity:0;animation:run .8s steps(1) infinite}
 @keyframes run{0%{opacity:1}12.5%,100%{opacity:0}}
+/* bottom navigation */
+#nav{--nc:#7C68FA;--nt:#4B3BC4;position:fixed;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:5;max-width:460px;margin:0 auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:hidden;border-radius:26px;border:1px solid rgba(32,32,32,.08);background:rgba(246,247,252,.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 8px 28px rgba(26,18,80,.16)}
+#nav button{position:relative;z-index:1;min-height:64px;border:0;background:none;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#nav button[aria-current]{color:var(--nt);font-weight:700}#nav button{transition:color .25s}
+#nav svg{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}#nav button[aria-current] svg{transform:translateY(-1px) scale(1.12)}#nav button:active svg{transform:scale(.9)}
+/* the lit tab: a short bar on the top edge and a soft glow behind the icon, both in that tab's colour */
+#navDot{position:absolute;left:0;top:0;width:25%;height:100%;pointer-events:none}
+#navDot i{display:block;width:30px;height:4px;margin:0 auto;border-radius:0 0 4px 4px;background:var(--nc);transition:background-color .3s}
+#navDot b{position:absolute;left:50%;top:-6px;width:104px;height:84px;margin-left:-52px;border-radius:50%;background:var(--nc);opacity:.3;filter:blur(18px);transition:background-color .3s}
+/* dashboard, progress, workouts */
+.h{margin:4px 0 0;font-size:26px;line-height:30px}.hsub{margin:-6px 0 2px;font-size:13px;color:var(--muted)}
+.box{background:var(--slate);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.box h3{margin:0;font-size:16px}.box .meta{font-size:13px;color:var(--muted)}
+.season{display:grid;grid-template-columns:repeat(42,minmax(0,1fr));gap:2px}.season i{height:14px;border-radius:2px;background:#fff}.season i.d{background:var(--purple)}.season i.n{background:var(--ink)}
+.wk{display:flex;align-items:center;gap:12px;background:#fff;border-radius:10px;padding:10px 12px}
+.wk .dy{flex:none;width:38px;font-size:12px;color:var(--muted)}.wk .dy b{display:block;font-size:17px;color:var(--ink)}
+.wk .tx{flex:1;min-width:0;display:flex;flex-direction:column}.wk .tx b{font-size:15px}.wk .tx span{font-size:13px;color:var(--muted)}
+.wk .st{flex:none;width:26px;height:26px;border-radius:50%;background:var(--slate);display:flex;align-items:center;justify-content:center}.wk.done .st{background:var(--purple)}
+.wk.now{box-shadow:inset 0 0 0 2px var(--ink)}.wk.now .st{background:none;width:auto;font-size:12px;font-weight:700}
+.ghost{height:48px;border:1px solid var(--muted);border-radius:12px;background:#fff;font-weight:700;cursor:pointer}
+.tg{background:#fff;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.tg .hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.tg .hd b{font-size:16px}.tg .hd em{font-style:normal;font-size:22px;font-weight:700;color:var(--deep)}
+.ladder{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.ladder div{border-radius:10px;padding:8px 10px;background:var(--slate);display:flex;flex-direction:column}.ladder span{font-size:11px;color:var(--muted)}.ladder b{font-size:14px;white-space:nowrap}.ladder div{min-width:0}
+.ladder .on{background:var(--deep);color:#fff}.ladder .on span{color:var(--soft)}
+.kv{display:flex;justify-content:space-between;gap:12px;background:#fff;border-radius:10px;padding:10px 12px;font-size:15px}.kv span{color:var(--muted)}.kv b{text-align:right}
+.bar{height:12px;border-radius:6px;background:#fff;overflow:hidden}.bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#CFC7FE,#7C68FA 60%,#3A2BA8)}
+details.box{padding:0;gap:0}details.box>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px;cursor:pointer;font-weight:700;font-size:16px}
+details.box>summary::-webkit-details-marker{display:none}details.box>summary span{font-weight:400;font-size:13px;color:var(--muted);margin-left:auto}
+details.box>summary:after{content:"";flex:none;width:9px;height:9px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);transform:rotate(45deg) translate(-2px,-2px);transition:transform .2s}details[open].box>summary:after{transform:rotate(225deg) translate(-2px,-2px)}
+details.box .in{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px}
+.it{background:#fff;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}.it b{font-size:15px}.it span{font-size:13px;color:var(--muted)}.it small{font-size:11px;color:var(--muted)}
+.sub{margin:4px 2px 0;font-size:12px;font-weight:700;color:var(--muted)}
+table.rm{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:10px;overflow:hidden}table.rm th,table.rm td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--slate);vertical-align:top}table.rm th{font-size:11px;color:var(--muted);font-weight:400}
 /* video sheet */
-.scrim{position:fixed;inset:0;background:rgba(16,12,40,.45);opacity:0;pointer-events:none;transition:opacity .2s}
-.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;background:rgba(246,245,255,.86);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4);border:1px solid rgba(255,255,255,.7);border-bottom:0;box-shadow:0 -12px 40px rgba(16,12,40,.25);border-radius:22px 22px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));opacity:0;visibility:hidden;display:flex;flex-direction:column;gap:12px;max-height:100dvh;overflow-y:auto}
+.scrim{position:fixed;inset:0;z-index:10;background:rgba(16,12,40,.45);opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:11;margin:0 auto;max-width:480px;background:rgba(246,245,255,.86);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4);border:1px solid rgba(255,255,255,.7);border-bottom:0;box-shadow:0 -12px 40px rgba(16,12,40,.25);border-radius:22px 22px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));opacity:0;visibility:hidden;display:flex;flex-direction:column;gap:12px;max-height:100dvh;overflow-y:auto}
 body.sheet-open .scrim{opacity:1;pointer-events:auto}
 .grab{align-self:center;width:40px;height:5px;border-radius:3px;background:#D5D8E8}
 .sh{display:flex;align-items:flex-start;gap:12px}.sh div{flex:1}.sh b{display:block;font-size:17px}.sh span{font-size:13px;color:var(--muted)}
@@ -81,13 +120,14 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}
 .vchip{flex:none;height:36px;padding:0 14px;border:1px solid #C9CDE3;border-radius:999px;background:#fff;font-size:14px;cursor:pointer;white-space:nowrap}
 .vchip[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
 .credit{font-size:12px;color:var(--muted)}
-@media (orientation:landscape) and (max-height:520px){.wrap{max-width:720px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);align-items:start}.top,.tag{grid-column:1/-1}.card{grid-row:span 2}.vid{width:min(100%,calc((100dvh - 170px)*16/9));align-self:center}}
-@media (prefers-reduced-motion:reduce){.scrim,.toggle svg{transition:none}.panel.enter>*{animation:none}#entry{display:none}.toggle,.daycheck,.timer button,.vchip,.x,.play i{transition:none}}
+@media (orientation:landscape) and (max-height:520px){.vid{width:min(100%,calc((100dvh - 170px)*16/9));align-self:center}}
+@media (prefers-reduced-motion:reduce){.scrim,.toggle svg{transition:none}.panel.enter>*{animation:none}#entry .f{animation:none}#entry .f:first-child{opacity:1}.toggle,.daycheck,.timer button,.vchip,.x,.play i{transition:none}}
 </style>
 </head>
 <body>
-<div id="entry" aria-hidden="true">
-  <svg viewBox="60 120 280 370">
+<div id="entry" role="dialog" aria-modal="true" aria-label="Baseline season">
+  <div class="glow" aria-hidden="true"></div>
+  <svg viewBox="60 120 280 370" aria-hidden="true">
     <defs>
       <linearGradient id="eRg" gradientUnits="userSpaceOnUse" spreadMethod="repeat" x1="270" y1="130" x2="110" y2="460"><stop offset="0" stop-color="#FFD9B8"/><stop offset=".16" stop-color="#F58CA6"/><stop offset=".32" stop-color="#D2264E"/><stop offset=".46" stop-color="#3A0F4A"/><stop offset=".6" stop-color="#7C68FA"/><stop offset=".76" stop-color="#3EB7DE"/><stop offset=".9" stop-color="#F4E3D0"/><stop offset="1" stop-color="#FFD9B8"/><animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="-160 330" dur="1.6s" repeatCount="indefinite"/></linearGradient>
       <filter id="eSmear" x="-80%" y="-20%" width="220%" height="140%"><feGaussianBlur stdDeviation="24 4"/></filter>
@@ -96,9 +136,16 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}
     <g id="eWire" fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round"></g>
   </svg>
   <p id="eText">Let’s begin</p>
-  <div id="eTitle"><b>Baseline season</b><i></i><span>1% better every day.</span></div>
+  <div id="eBottom">
+    <h1>Baseline season</h1>
+    <div class="ePills"><span>Plyos</span><span>Mobility</span><span>Cardio</span><span>Lifting</span></div>
+    <p>Week 3 · Fri 4 Dec · Full B — hinge / back</p>
+    <p class="eTag">1% better every day.</p>
+    <button id="eGo" type="button">Start today</button>
+  </div>
 </div>
-<div class="wrap" id="wrap">
+<main class="wrap" id="wrap">
+<section class="page" id="t-today">
   <div class="top">
     <button class="daycheck" id="dayCheck" type="button" aria-pressed="false" aria-label="Mark day done"><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.5" stroke="#202020" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="chip"><span>Week</span><b>3 <small>of 12</small></b></div>
@@ -121,7 +168,42 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}
   <button class="toggle" id="toggle" type="button" aria-expanded="false" aria-controls="panel"><span><span id="toggleText"></span><span id="toggleCount"></span></span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
   <div class="panel" id="panel" hidden></div>
   <span class="tag">Preview · sample day · slide, swipe the picture, or tap a dot</span>
-</div>
+</section>
+
+<section class="page" id="t-dash" hidden>
+  <h2 class="h">Dashboard</h2><p class="hsub">Baseline season · Month 1 Foundation</p>
+  <div class="box"><h3>Season</h3><div class="season" id="season" role="img" aria-label="17 of 84 days done"></div><span class="meta">Week 3 of 12 · 17 of 84 days done · working at 60–70%</span></div>
+  <div class="box"><h3>This week</h3><div id="weekRows" style="display:flex;flex-direction:column;gap:8px"></div><button class="ghost" type="button" data-tab="today">Open today</button></div>
+  <div class="box"><h3>Tests</h3>
+    <div class="kv"><span>Week 1</span><b>Vert test</b></div><div class="kv"><span>Week 2</span><b>5K time trial</b></div><div class="kv"><span>Week 12</span><b>Retest: vert, lifts, 5K and 10K</b></div></div>
+  <span class="tag">Preview · sample numbers</span>
+</section>
+
+<section class="page" id="t-prog" hidden>
+  <h2 class="h">Progress</h2><p class="hsub">What you are working towards</p>
+  <div class="box"><h3>Rep targets</h3><span class="meta">Sets × reps stay fixed. The load climbs each month. You are in month 1.</span><div id="targets" style="display:flex;flex-direction:column;gap:8px"></div>
+    <p class="sub">Session B accessories</p>
+    <div class="kv"><span>Hip thrust</span><b>3 × 8</b></div><div class="kv"><span>Leg press</span><b>3 × 8</b></div><div class="kv"><span>Step-ups + shrimp squats</span><b>3 × 8 / leg</b></div><div class="kv"><span>Back day</span><b>2 sets each</b></div></div>
+  <details class="box"><summary>Dunk<span>9'9" · 3 in to go</span></summary><div class="in"><div class="bar" role="img" aria-label="Best touch 9 ft 9 in, rim 10 ft"><i style="width:50%"></i></div>
+    <div class="kv"><span>Standing reach</span><b>9'6"</b></div><div class="kv"><span>Best touch</span><b>9'9"</b></div><div class="kv"><span>Rim</span><b>10'0"</b></div></div></details>
+  <details class="box"><summary>Strength<span>135 · 235 · 325 lb</span></summary><div class="in"><div class="kv"><span>Hang Clean</span><b>135 lb</b></div><div class="kv"><span>Squat</span><b>235 lb · was 225</b></div><div class="kv"><span>Deadlift</span><b>325 lb</b></div></div></details>
+  <details class="box"><summary>Running<span>5K 24:30</span></summary><div class="in"><div class="kv"><span>5K</span><b>24:30</b></div><div class="kv"><span>10K</span><b>not run yet</b></div></div></details>
+  <span class="tag">Preview · sample numbers · logging carries over from the current app</span>
+</section>
+
+<section class="page" id="t-work" hidden>
+  <h2 class="h">Workouts</h2><p class="hsub">Always in this order. No rest days.</p>
+  <div id="library" style="display:flex;flex-direction:column;gap:12px"></div>
+</section>
+</main>
+
+<nav id="nav" aria-label="Sections">
+  <span id="navDot" aria-hidden="true"><b></b><i></i></span>
+  <button type="button" data-tab="today" aria-current="page"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>Today</button>
+  <button type="button" data-tab="dash"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="9" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="5" rx="1.5"/><rect x="13.5" y="11.5" width="7" height="9" rx="1.5"/><rect x="3.5" y="15.5" width="7" height="5" rx="1.5"/></svg>Dashboard</button>
+  <button type="button" data-tab="prog"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16M6 15l4-4 3 3 5-7"/><path d="M15 7h3v3"/></svg>Progress</button>
+  <button type="button" data-tab="work"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8v8M17 8v8M4 10v4M20 10v4M7 12h10"/></svg>Workouts</button>
+</nav>
 
 <div class="scrim" id="scrim"></div>
 <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle" aria-hidden="true">
@@ -183,7 +265,7 @@ const got=i=>ticks[i].filter(Boolean).length, complete=i=>got(i)>=S[i].need;
 
 // --- slider: knob rides a curved track; t in 0..1, pos in 0..3 ---
 const pt=t=>[36+248*t, 28+48*t*(1-t)];
-$("reel").innerHTML=S.map(s=>`<img src="icons/tile-${s.k}.webp" alt="" width="360" height="360">`).join("");
+$("reel").innerHTML=S.map(s=>`<img src="icons/fig-${s.k}.webp" alt="" width="480" height="480">`).join("");
 S.forEach((s,i)=>{const c=document.createElementNS(NS,"circle");const [x,y]=pt(i/3);c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",4.5);c.setAttribute("fill",s.c);c.setAttribute("stroke","rgba(255,255,255,.5)");$("dots").appendChild(c)});
 // --- entry: runner for 2.8 s, then the "Baseline season" title, then the black screen lifts off the app ---
 // Each pair is [thigh, knee bend] in degrees; thigh is measured from straight down, + is forward.
@@ -214,30 +296,72 @@ function runner(f){
 }
 const entry=$("entry");
 function enter(){
- if(reduce){entry.remove();return}
  const fr=RUN.map((_,f)=>runner(f));
  $("eBody").innerHTML=fr.map(x=>x[0]).join("");$("eWire").innerHTML=fr.map(x=>x[1]).join("");
- const wrap=$("wrap");wrap.style.opacity=0;
- animate("#eText",{opacity:[0,1],y:[10,0]},{duration:.35,ease:"easeOut"});
- let left=false,timer=0;
- // the runner runs off and the title takes its place
- const title=()=>{
-  animate("#entry svg",{opacity:0,x:46},{duration:.45,ease:"easeIn"});
-  animate("#eText",{opacity:0,y:-8},{duration:.3,ease:"easeIn"});
-  animate("#eTitle",{opacity:[0,1]},{duration:.3,delay:.35});
-  animate("#eTitle b",{opacity:[0,1],y:[18,0]},{duration:.5,delay:.35,ease:"easeOut"});
-  animate("#eTitle i",{scaleX:[0,1]},{duration:.55,delay:.55,ease:[.2,.8,.2,1]});
-  animate("#eTitle span",{opacity:[0,1],y:[8,0]},{duration:.4,delay:.75,ease:"easeOut"});
-  timer=setTimeout(leave,2000);
+ const wrap=$("wrap"),nav=$("nav"),bottom=$("eBottom"),art=entry.querySelector("svg");
+ wrap.inert=nav.inert=true;
+ let stage=0,timer=0;
+ // the runner keeps running and moves up; the Baseline season block rises in underneath it
+ const opening=()=>{if(stage)return;stage=1;clearTimeout(timer);
+  bottom.style.visibility="visible";
+  const r=art.getBoundingClientRect(),room=innerHeight-bottom.offsetHeight-16,sc=Math.min(1,room/r.height),up=room/2+8-(r.top+r.height/2);
+  if(reduce){$("eText").style.display="none";entry.querySelector(".glow").style.opacity=1;art.style.transform=`translateY(${up}px) scale(${sc})`;$("eGo").focus();return}
+  animate(".glow",{opacity:1},{duration:.9,ease:"easeOut"});
+  animate("#eText",{opacity:0,y:-10},{duration:.3,ease:"easeIn"});
+  animate(art,{y:up,scale:sc},{type:"spring",visualDuration:.7,bounce:.12});
+  for(let i=0;i<bottom.children.length;i++)animate(bottom.children[i],{opacity:[0,1],y:[28,0]},{duration:.5,delay:.2+i*.07,ease:[.2,.8,.2,1]});
+  setTimeout(()=>{if(stage===1)$("eGo").focus({preventScroll:true})},800);
  };
- // the black screen lifts away like a curtain while the app settles into place
- const leave=()=>{if(left)return;left=true;clearTimeout(timer);
+ // Start today: the opening screen lifts away like a curtain and the app settles into place
+ const leave=()=>{if(stage===2)return;stage=2;clearTimeout(timer);wrap.inert=nav.inert=false;
+  if(reduce){entry.remove();return}
   animate(entry,{y:"-100%"},{duration:.65,ease:[.7,0,.2,1]}).then(()=>entry.remove());
-  animate("#eTitle",{y:60},{duration:.65,ease:[.7,0,.2,1]});
-  animate(wrap,{opacity:[0,1],scale:[.94,1],y:[40,0]},{duration:.7,delay:.12,ease:[.2,.8,.2,1]}).then(()=>{wrap.style.transform=""})};
- timer=setTimeout(title,2800);entry.addEventListener("click",leave);
+  animate(wrap,{opacity:[0,1],scale:[.94,1],y:[40,0]},{duration:.7,delay:.12,ease:[.2,.8,.2,1]}).then(()=>{wrap.style.transform=""});
+  animate(nav,{y:[90,0]},{duration:.55,delay:.3,ease:[.2,.8,.2,1]});
+ };
+ $("eGo").onclick=leave;
+ if(reduce){document.querySelector("#eRg animateTransform").remove();opening();return}
+ wrap.style.opacity=0;
+ animate("#eText",{opacity:[0,1],y:[10,0]},{duration:.35,ease:"easeOut"});
+ timer=setTimeout(opening,2800);entry.addEventListener("click",()=>{if(!stage)opening()});
 }
 enter();
+
+// --- bottom navigation: Today, Dashboard, Progress, Workouts ---
+const TABS=["today","dash","prog","work"];let tab="today";
+const TINT=[["#7C68FA","#4B3BC4"],["#3EB7DE","#0B7397"],["#FA512E","#C6391A"],["#608C84","#3C6A61"]]; // glow colour, and a darker shade of it for the icon and label
+const navX=motionValue(0);navX.on("change",v=>{$("navDot").style.transform=`translateX(${v*100}%)`});
+function showTab(t){
+ if(t===tab)return;const from=TABS.indexOf(tab),to=TABS.indexOf(t);tab=t;
+ for(const k of TABS)$("t-"+k).hidden=k!==t;
+ document.querySelectorAll("#nav button").forEach(b=>b.dataset.tab===t?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
+ $("nav").style.setProperty("--nc",TINT[to][0]);$("nav").style.setProperty("--nt",TINT[to][1]);
+ scrollTo(0,0);
+ if(reduce){navX.jump(to);return}
+ animate(navX,to,{type:"spring",visualDuration:.3,bounce:.2});
+ animate($("t-"+t),{opacity:[0,1],x:[22*Math.sign(to-from),0]},{duration:.26,ease:[.2,.8,.2,1]}).then(()=>{$("t-"+t).style.transform=""});
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)showTab(b.dataset.tab)});
+
+// --- dashboard, progress and workouts content (your program; sample progress numbers) ---
+{
+ let h="";for(let i=0;i<84;i++)h+=`<i class="${i<18&&i!==6?"d":i===18?"n":""}"></i>`;$("season").innerHTML=h;
+ const W=[["Mon","30","Full A — squat focus","Flow C, then Session A"],["Tue","1","Easy — run + mobility","Easy run 20–30 min, mobility"],["Wed","2","Plyo + Cardio","Flow A, then Bristol Method 20–30 min"],["Thu","3","Mobility + Light Plyos","Flow B, 30–45 min, low hops only"],["Fri","4","Full B — hinge / back","Flow C, then Session B"],["Sat","5","Long easy","Run / ride 30–45 min"],["Sun","6","Active Recovery","Flow B short, walk / easy ride"]];
+ const TICK='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+ $("weekRows").innerHTML=W.map((d,i)=>`<div class="wk ${i<4?"done":i===4?"now":""}"><div class="dy">${d[0]}<b>${d[1]}</b></div><div class="tx"><b>${d[2]}</b><span>${d[3]}</span></div><div class="st">${i<4?TICK:i===4?"Today":""}</div></div>`).join("");
+ // Sets × reps and monthly loads are the starting prescriptions from the roadmap.
+ const T=[["Squat","3 × 5",["145–155","170–180","180–200"]],["Deadlift","3 × 5",["210–225","245–260","260–290"]],["Hang Clean","5 × 3",["80–95","100–108","108–120"]]];
+ $("targets").innerHTML=T.map(([n,sr,l])=>`<div class="tg"><div class="hd"><b>${n}</b><em>${sr}</em></div><div class="ladder">${l.map((x,i)=>`<div class="${i?"":"on"}"><span>Month ${i+1}${i?"":" · now"}</span><b>${x} lb</b></div>`).join("")}</div></div>`).join("");
+ const it=x=>{const p=x.split(" — "),src=p.length>1&&p[p.length-1][0]==="@"?p.pop():"";return `<div class="it"><b>${p[0]}</b>${p[1]?`<span>${p.slice(1).join(" — ")}</span>`:""}${src?`<small>${src}</small>`:""}</div>`};
+ const blk=(name,meta,groups)=>`<details class="box"><summary>${name}<span>${meta}</span></summary><div class="in">${groups.map(([g,xs])=>(g?`<p class="sub">${g}</p>`:"")+xs.map(it).join("")).join("")}</div></details>`;
+ $("library").innerHTML=
+  blk("Plyos","15–20 min",[["",["Tendon prep — isometric split-squat hold, front heel elevated, 30 sec × 3/side, then same + small hops 3×12/side — @garagestrength","Pogo / plate / line hops — 20–30 sec, 2–4 sets, 60–90 sec rest — @explorewithiris_","Contrast — weighted calf raises → pogo jumps, short ground contacts — @gmaxperform","Main jumps, pick 2–3: squat jumps, split squat jumps, hurdle jumps, box jumps, broad jumps — @zoe.lisha / @lgaugsburg","Stop when landings get loud or sloppy — @charactiv"]]])+
+  blk("Mobility","10 min",[["",["Deficit lunge, Copenhagen dips, cable curtsy lunge, foam roller step-overs — @sarahtweedie.physio","Cossack squats, half-kneeling KB windmills, single-arm offset deadlifts, renegade rows — @no.mad.fitness","Ankle / hip / T-spine / shoulder prep — @vivonaflow"]]])+
+  blk("Cardio","15–25 min",[["",["Bristol Method — rotate bike → rower, 20–30 min — @jtperformance__","Hill sprints — 6–8 × 20–30 sec uphill, walk back — @gatelyy","Easy run / ride / swim — 20–40 min, conversational pace","Sprints — 4–6 × 30–60 m, full walk-back rest — @p_bair"]]])+
+  blk("Lifting","30–40 min",[["Session A · squat focus",["Back / front squat","Bulgarian split squats","Romanian deadlifts","Single-leg step-ups","Copenhagen plank"]],["Session B · hinge / back",["Hip thrust — 3×8","Leg press — 3×8","Weighted step-ups + shrimp squats — 3×8/leg","Back day — 2 sets each: chest-supported row, rack pull, pulldown / pull-ups, cable rows, lat pullover, reverse fly"]],["Olympic",["Clean progression — Tall Clean → High Hang → Hang Clean → Full Clean — @trainwith.emma_","Split jerk — weight 50/50 — @maibritreynheim"]],["Core finisher · pick one",["V-ups circuit — 25 / 15 / 10","Crunches / twists / leg raises circuit","Gymnast circuit"]]])+
+  blk("Flows","A · B · C",[["Flow A · bounce + run drills",["Pogo, plate, line hops — 20–30 sec, 2–4 sets — @explorewithiris_","Lower-leg circuit — pogo 30 reps, calf raises 20/leg — @wannagetfaster","Running drills — skips, backward running, ankling, bounding, build-up strides, 2×20 m — @thebarefootsprinter","Landing control — stop when landings get loud — @charactiv"]],["Flow B · hip flow + ATG",["ATG hip standards — incline pigeon, couch stretch, seated good morning, loaded butterfly, ATG split squat — @movementgems","5-min hip routine — 90/90 hip thrust 2×10/side, frog stretch + rotation 2×6/side — @nomusclepain_academy","Pick 2–3: deficit lunge, Copenhagen, Cossack squats, KB windmills"]],["Flow C · power + contrast",["Clean work — progression, or Power Clean EMOM ×1 for 12 min then ×3 for 6 min at 80% — @coachrandyf2","Contrast — calf raises → pogo jumps, or KB swings + box jumps — @gmaxperform","Main jumps, pick 2 — @nicolerrrose","Rotational finish — KB rotational patterns, 2×8/side — @marcusfilly"]]])+
+  `<details class="box"><summary>Roadmap<span>Months 1–3</span></summary><div class="in"><table class="rm"><tr><th>Phase</th><th>Weeks</th><th>Strength</th><th>Test</th></tr><tr><td>Month 1 Foundation</td><td>1–4</td><td>60–70%</td><td>Vert Wk 1, 5K Wk 2</td></tr><tr><td>Month 2 Build</td><td>5–8</td><td>70–80%</td><td>—</td></tr><tr><td>Month 3 Strength + Power</td><td>9–12</td><td>80–90%</td><td>Retest all, Wk 12</td></tr></table></div></details>`;
+}
 
 // A ring and eight dots fly out from a point: used when a step is ticked and when a section is finished.
 function burst(x,y,color,size=22){
@@ -373,7 +497,7 @@ function show(i){
  $("shSub").textContent=cur.list.length>1?label:"";$("credit").textContent="Video: "+ch+" on YouTube";
  document.querySelectorAll(".vchip").forEach(c=>c.setAttribute("aria-pressed",String(+c.dataset.i===i)));
  // Muted autoplay is the only autoplay iPhone allows inline; tap the video for sound.
- $("vid").innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1" title="${label} — ${ch}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+ $("vid").innerHTML=`<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1" title="${label} — ${ch}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
 }
 function closeSheet(v){
  if(!document.body.classList.contains("sheet-open"))return;
