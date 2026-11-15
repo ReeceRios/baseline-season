@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Today — preview</title>
+<style>
+@font-face{font-family:"DM Sans";src:url("fonts/dm-sans.woff2") format("woff2");font-weight:100 1000;font-display:swap}
+:root{--ink:#202020;--purple:#7C68FA;--slate:#EDEFF9;--muted:#606891;--deep:#1A1250;--soft:#DAD6F5;
+--rough:linear-gradient(155deg,#4B3BC4,#2A1E7A 55%,#1A1250)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#fff;color:var(--ink);font:15px/1.4 "Arial Nova","DM Sans",Arial,sans-serif}
+button{font:inherit;color:inherit}
+.wrap{max-width:440px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px}
+.tag{align-self:flex-start;font-size:12px;color:var(--muted);background:var(--slate);border-radius:999px;padding:3px 10px}
+.date{font-size:13px;color:var(--muted)}
+h1{margin:2px 0 0;font-size:26px;line-height:30px}
+.strip{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.d{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.d i{width:34px;height:34px;border-radius:50%;background:var(--slate);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:14px}
+.d.done i{background:var(--purple)}
+.d.now{color:var(--ink);font-weight:700}.d.now i{background:#fff;border:2px solid var(--ink);font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:var(--slate);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.stat span{font-size:11px;color:var(--muted)}.stat b{font-size:17px}.stat b small{font-size:13px;font-weight:400;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:0 0 12px;border:0;border-radius:12px;overflow:hidden;background:var(--deep);color:#fff;text-align:left;cursor:pointer}
+.tile img{display:block;width:100%;aspect-ratio:1;margin-bottom:6px;pointer-events:none}
+.tile b{font-size:17px;padding:0 14px}.tile span{font-size:13px;color:var(--soft);padding:0 14px}
+.tile[aria-expanded="true"]{box-shadow:0 0 0 3px var(--purple)}
+.tile.off{background:var(--slate);color:var(--muted);cursor:default}.tile.off img{opacity:.3}.tile.off span{color:var(--muted)}
+.tick{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;background:#fff;display:none;align-items:center;justify-content:center}
+.tile.complete .tick{display:flex}
+.panel{grid-column:1/-1;background:var(--slate);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;animation:open .2s ease-out}
+@keyframes open{from{opacity:0;transform:translateY(-6px)}}
+.panel[hidden]{display:none}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.ph b{font-size:16px}.ph span{font-size:13px;color:var(--muted)}
+.loads{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.loads div{background:#fff;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column}.loads span{font-size:11px;color:var(--muted)}.loads b{font-size:15px}
+.note{font-size:12px;color:var(--muted);margin:-4px 0 0}
+.row{display:flex;align-items:center;gap:4px;background:#fff;border-radius:10px;padding:4px 4px 4px 12px}
+.row label{flex:1;display:flex;align-items:flex-start;gap:12px;padding:8px 0;cursor:pointer;min-width:0}
+.row input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--purple)}
+.row .t{display:flex;flex-direction:column;gap:2px}.row .t b{font-size:15px}.row .t span{font-size:13px;color:var(--muted)}
+.play{flex:none;width:44px;height:44px;border:0;border-radius:50%;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.play i{width:32px;height:32px;border-radius:50%;background:var(--deep);display:flex;align-items:center;justify-content:center}
+.timer{display:flex;align-items:center;gap:8px}.timer span{flex:1;font-size:13px;color:var(--muted)}
+.timer button{height:44px;padding:0 14px;border:1px solid var(--muted);border-radius:10px;background:#fff;font-weight:700;cursor:pointer}
+.done-btn{height:52px;border:0;border-radius:12px;background:var(--rough);color:#fff;font-weight:700;font-size:16px;cursor:pointer}
+/* video sheet */
+.scrim{position:fixed;inset:0;background:rgba(16,12,40,.55);opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;gap:12px}
+body.sheet-open .scrim{opacity:1;pointer-events:auto}body.sheet-open .sheet{transform:none}
+.grab{align-self:center;width:40px;height:5px;border-radius:3px;background:#D5D8E8}
+.sh{display:flex;align-items:flex-start;gap:12px}.sh div{flex:1}.sh b{display:block;font-size:17px}.sh span{font-size:13px;color:var(--muted)}
+.x{width:44px;height:44px;border:0;border-radius:50%;background:var(--slate);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}
+.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:36px;padding:0 14px;border:1px solid #C9CDE3;border-radius:999px;background:#fff;font-size:14px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
+.credit{font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.panel{animation:none}.sheet,.scrim{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="tag">Preview · sample day</span>
+  <div><div class="date">Fri 4 Dec</div><h1>Full B — hinge / back</h1></div>
+  <div class="strip" id="strip"></div>
+  <div class="stats">
+    <div class="stat"><span>Week</span><b>3 <small>of 12</small></b></div>
+    <div class="stat"><span>Day</span><b>19 <small>of 84</small></b></div>
+    <div class="stat"><span>Steps today</span><b><span id="stepsDone" style="font-size:17px;color:inherit">0</span> <small>of 9</small></b></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <button class="done-btn" type="button">Mark day done</button>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle" aria-hidden="true">
+  <div class="grab" aria-hidden="true"></div>
+  <div class="sh"><div><b id="shTitle"></b><span id="shSub"></span></div>
+    <button class="x" id="shClose" type="button" aria-label="Close video"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="#202020" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+  <div class="vid" id="vid"></div>
+  <div class="chips" id="chips" role="group" aria-label="Videos for this step"></div>
+  <div class="credit" id="credit"></div>
+</section>
+
+<script>
+// Videos are YouTube embeds: [video id, label, channel]. Change an id to swap a video.
+const V={
+ clean:[["GvfFf4xDNqM","Hang power clean","Wodstar"],["qQ8InArxi-Y","Three tips","UCLA Recreation"]],
+ contrast:[["j0nl5dWuqN4","Pogo jumps","Runna"],["bDCeXbMJVNs","KB swing","Zack Henderson"],["LeiLzSU3OXE","Box jump","Made Possible PT"]],
+ jumps:[["B7vbjJ2wQQQ","Approach jump","Elevate Yourself"],["STGtDv9qDwc","Jump technique","Isaiah Rivera"]],
+ rot:[["-cYdEI4T694","Rotational KB swing","Jlfitnessmiami"]],
+ hip:[["pUdIL5x0fWg","Hip thrust","Nuffield Health"],["xDmFkJxPzeM","Full breakdown","Jeff Nippard"]],
+ legpress:[["n1MQcwTN7YQ","Leg press","Kelly Matthews"]],
+ stepup:[["9ZknEYboBOQ","Step-up","Bobby Maximus"],["FcQ77QxcotE","Shrimp squat","The Active Life"],["_K3mchRTtqM","Shrimp progressions","Coastal Fitness"]],
+ back:[["vmX58YYK3-8","Chest-supported row","Seriously Strong Training"],["9vYBWV5OeKg","Rack pull","PureGym"],["AOpi-p0cJkc","Pulldown","SilverSneakers"],["vwHG9Jfu4sw","Cable row","Max Euceda"],["32auHIqgEoM","Lat pullover","Max Euceda"],["3MKmYlhxgOo","Reverse fly","Runna"]]
+};
+const BLOCKS=[
+ {k:"plyo",name:"Plyos",sub:"Flow C · power",title:"Flow C · power",steps:[
+  ["Clean work","progression or Power Clean EMOM","clean"],
+  ["Contrast","calf raises → pogo jumps, or KB swings + box jumps","contrast"],
+  ["Main jumps","pick 2","jumps"],
+  ["Rotational finish","KB rotational patterns, 2×8/side","rot"]]},
+ {k:"mob",off:"Back Sunday"},
+ {k:"cardio",off:"Back Saturday"},
+ {k:"lift",name:"Lifting",sub:"Session B · hinge / back",title:"Session B · hinge / back",loads:true,steps:[
+  ["Hip thrust","3×8","hip"],
+  ["Leg press","3×8","legpress"],
+  ["Weighted step-ups + shrimp squats","3×8/leg","stepup"],
+  ["Back day","2 sets each: chest-supported row, rack pull, pulldown / pull-ups, cable rows, lat pullover, reverse fly","back"],
+  ["Core finisher","pick one",null]]}
+];
+const NAMES={mob:"Mobility",cardio:"Cardio"};
+const ticks={plyo:[1,1,1,0],lift:[0,0,0,0,0]};
+const $=id=>document.getElementById(id);
+const CHECK='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="#2A1E7A" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const PLAY='<i><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" fill="#fff"/></svg></i>';
+
+$("strip").innerHTML=["M","T","W","T","F","S","S"].map((l,i)=>`<div class="d ${i<4?"done":i==4?"now":""}">${l}<i>${i<4?'<svg width="16" height="16" viewBox="0 0 16 16" role="img" aria-label="done"><path d="M3.5 8.5l3 3 6-7" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>':i}</i></div>`).join("");
+
+function tileHTML(b){
+ if(b.off) return `<div class="tile off"><img src="icons/tile-${b.k}.webp" alt="" width="360" height="360"><b>${NAMES[b.k]}</b><span>Not today</span><span>${b.off}</span></div>`;
+ return `<button class="tile" type="button" data-k="${b.k}" aria-expanded="false" aria-controls="p-${b.k}"><img src="icons/tile-${b.k}.webp" alt="" width="360" height="360"><b>${b.name}</b><span>${b.sub}</span><span class="cnt"></span><em class="tick">${CHECK}</em></button>`;
+}
+function panelHTML(b){
+ const loads=b.loads?`<div class="loads"><div><span>Hang Clean</span><b>81–95</b></div><div><span>Squat</span><b>135–158</b></div><div><span>Deadlift</span><b>195–228</b></div></div><p class="note">Working range in lb, 60–70% of max.</p>`:"";
+ const rows=b.steps.map(([n,d,v],i)=>`<div class="row"><label><input type="checkbox" data-k="${b.k}" data-i="${i}"><span class="t"><b>${n}</b><span>${d}</span></span></label>${v?`<button class="play" type="button" data-v="${v}" data-n="${n}" aria-label="Watch: ${n}">${PLAY}</button>`:""}</div>`).join("");
+ const timer=b.k==="lift"?`<div class="timer"><span>Rest timer</span><button type="button">60 s</button><button type="button">90 s</button><button type="button">120 s</button></div>`:"";
+ return `<div class="panel" id="p-${b.k}" hidden><div class="ph"><b>${b.title}</b><span class="pc"></span></div>${loads}${rows}${timer}</div>`;
+}
+// Two rows of two tiles; each row's panel opens directly beneath it.
+const B=Object.fromEntries(BLOCKS.map(b=>[b.k,b]));
+$("grid").innerHTML=tileHTML(B.plyo)+tileHTML(B.mob)+panelHTML(B.plyo)+tileHTML(B.cardio)+tileHTML(B.lift)+panelHTML(B.lift);
+
+function sync(){
+ let total=0;
+ for(const k of ["plyo","lift"]){
+  const n=ticks[k].filter(Boolean).length, all=ticks[k].length; total+=n;
+  const t=document.querySelector(`.tile[data-k="${k}"]`);
+  t.querySelector(".cnt").textContent=n===all?`${n} of ${all} · done`:`${n} of ${all}`;
+  t.classList.toggle("complete",n===all);
+  $("p-"+k).querySelector(".pc").textContent=`${n} of ${all}`;
+  ticks[k].forEach((v,i)=>{document.querySelector(`input[data-k="${k}"][data-i="${i}"]`).checked=!!v});
+ }
+ $("stepsDone").textContent=total;
+}
+document.addEventListener("click",e=>{
+ const tile=e.target.closest(".tile[data-k]");
+ if(tile){
+  const k=tile.dataset.k, open=tile.getAttribute("aria-expanded")!=="true";
+  document.querySelectorAll(".tile[data-k]").forEach(t=>t.setAttribute("aria-expanded","false"));
+  document.querySelectorAll(".panel").forEach(p=>p.hidden=true);
+  if(open){tile.setAttribute("aria-expanded","true");$("p-"+k).hidden=false}
+  return;
+ }
+ const play=e.target.closest(".play"); if(play){openSheet(play.dataset.n,play.dataset.v,play);return}
+ const chip=e.target.closest(".chip"); if(chip){show(+chip.dataset.i);return}
+});
+document.addEventListener("change",e=>{const c=e.target;if(c.dataset.k){ticks[c.dataset.k][+c.dataset.i]=c.checked?1:0;sync()}});
+
+let cur=null,lastFocus=null;
+function openSheet(name,key,from){
+ cur={name,list:V[key]};lastFocus=from;
+ $("shTitle").textContent=name;
+ $("chips").innerHTML=cur.list.length>1?cur.list.map(([,l],i)=>`<button class="chip" type="button" data-i="${i}" aria-pressed="false">${l}</button>`).join(""):"";
+ $("chips").hidden=cur.list.length<2;
+ show(0);
+ document.body.classList.add("sheet-open");$("sheet").setAttribute("aria-hidden","false");$("shClose").focus();
+}
+function show(i){
+ const [id,label,ch]=cur.list[i];
+ $("shSub").textContent=cur.list.length>1?label:"";
+ $("credit").textContent="Video: "+ch+" on YouTube";
+ document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",String(+c.dataset.i===i)));
+ // Muted autoplay is the only autoplay iPhone allows inline; tap the video for sound.
+ $("vid").innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1" title="${label} — ${ch}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+}
+function closeSheet(){
+ document.body.classList.remove("sheet-open");$("sheet").setAttribute("aria-hidden","true");
+ setTimeout(()=>{if(!document.body.classList.contains("sheet-open"))$("vid").innerHTML=""},260); // removing the iframe stops playback
+ if(lastFocus)lastFocus.focus();
+}
+$("shClose").onclick=closeSheet;$("scrim").onclick=closeSheet;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("sheet-open"))closeSheet()});
+// Drag the sheet down to close it.
+let y0=null;
+$("sheet").addEventListener("touchstart",e=>{if(e.target.closest(".vid,.chips"))return;y0=e.touches[0].clientY},{passive:true});
+$("sheet").addEventListener("touchmove",e=>{if(y0===null)return;const dy=Math.max(0,e.touches[0].clientY-y0);$("sheet").style.transform=`translateY(${dy}px)`},{passive:true});
+$("sheet").addEventListener("touchend",e=>{if(y0===null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;$("sheet").style.transform="";if(dy>90)closeSheet()});
+sync();
+</script>
+</body>
+</html>
