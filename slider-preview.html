@@ -52,8 +52,8 @@ button{font:inherit;color:inherit}
 .tag{align-self:center;font-size:12px;color:var(--muted)}
 /* video sheet */
 .scrim{position:fixed;inset:0;background:rgba(16,12,40,.55);opacity:0;pointer-events:none;transition:opacity .2s}
-.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;gap:12px;max-height:100dvh;overflow-y:auto}
-body.sheet-open .scrim{opacity:1;pointer-events:auto}body.sheet-open .sheet{transform:none}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(110%);visibility:hidden;display:flex;flex-direction:column;gap:12px;max-height:100dvh;overflow-y:auto}
+body.sheet-open .scrim{opacity:1;pointer-events:auto}
 .grab{align-self:center;width:40px;height:5px;border-radius:3px;background:#D5D8E8}
 .sh{display:flex;align-items:flex-start;gap:12px}.sh div{flex:1}.sh b{display:block;font-size:17px}.sh span{font-size:13px;color:var(--muted)}
 .x{width:44px;height:44px;border:0;border-radius:50%;background:var(--slate);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
@@ -64,7 +64,7 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}body.sheet-open .sheet{tran
 .vchip[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
 .credit{font-size:12px;color:var(--muted)}
 @media (orientation:landscape) and (max-height:520px){.wrap{max-width:720px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);align-items:start}.top,.tag{grid-column:1/-1}.card{grid-row:span 2}.vid{width:min(100%,calc((100dvh - 170px)*16/9));align-self:center}}
-@media (prefers-reduced-motion:reduce){.sheet,.scrim,.toggle,.toggle svg{transition:none}}
+@media (prefers-reduced-motion:reduce){.scrim,.toggle,.toggle svg{transition:none}}
 </style>
 </head>
 <body>
@@ -103,7 +103,8 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}body.sheet-open .sheet{tran
   <div class="credit" id="credit"></div>
 </section>
 
-<script>
+<script type="module">
+import {animate,motionValue} from "./vendor/motion.js";
 // Videos are YouTube embeds: [video id, label, channel]. Change an id to swap a video.
 const V={
  clean:[["GvfFf4xDNqM","Hang power clean","Wodstar"],["qQ8InArxi-Y","Three tips","UCLA Recreation"]],
@@ -154,7 +155,9 @@ const got=i=>ticks[i].filter(Boolean).length, complete=i=>got(i)>=S[i].need;
 const pt=t=>[36+248*t, 28+48*t*(1-t)];
 $("reel").innerHTML=S.map(s=>`<img src="icons/tile-${s.k}.webp" alt="" width="360" height="360">`).join("");
 S.forEach((s,i)=>{const c=document.createElementNS(NS,"circle");const [x,y]=pt(i/3);c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",4.5);c.setAttribute("fill",s.c);$("dots").appendChild(c)});
-let pos=0,idx=0,raf=0,target=0; // target = where the knob is heading, so quick repeat presses add up
+let pos=0,idx=0,target=0; // target = where the knob is heading, so quick repeat presses add up
+const SPRING={type:"spring",visualDuration:.3,bounce:.2};
+const mv=motionValue(0);
 function draw(){
  const [x,y]=pt(pos/3); $("knob").setAttribute("transform",`translate(${x} ${y})`);
  $("reel").style.transform=`translateX(${-pos*100}%)`;
@@ -172,23 +175,24 @@ function paint(){
  renderPanel();
  const all=S.every((_,i)=>complete(i)); if(all)$("dayCheck").setAttribute("aria-pressed","true");
 }
-function go(to){
- to=target=Math.max(0,Math.min(3,to)); cancelAnimationFrame(raf);
- if(reduce){pos=to;draw();return}
- const from=pos,t0=performance.now(),dur=160+60*Math.abs(to-from);
- (function step(now){const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3);pos=from+(to-from)*e;draw();if(k<1)raf=requestAnimationFrame(step)})(t0);
+mv.on("change",v=>{pos=Math.max(0,Math.min(3,v));draw()}); // the spring may overshoot; the knob stays on the track
+function go(to,velocity=0){
+ to=target=Math.max(0,Math.min(3,to));
+ if(reduce){mv.jump(to);return}
+ animate(mv,to,{...SPRING,velocity});
 }
 const sl=$("slider");let drag=false,moved=false;
 const fromX=e=>{const r=sl.querySelector("svg").getBoundingClientRect();return Math.max(0,Math.min(1,((e.clientX-r.left)/r.width*320-36)/248))*3};
-sl.addEventListener("pointerdown",e=>{drag=true;moved=false;sl.setPointerCapture(e.pointerId);cancelAnimationFrame(raf);pos=fromX(e);draw()});
-sl.addEventListener("pointermove",e=>{if(!drag)return;moved=true;pos=fromX(e);draw()});
-const end=()=>{if(!drag)return;drag=false;go(Math.round(pos))};
+let downX=0;
+sl.addEventListener("pointerdown",e=>{drag=true;moved=false;downX=e.clientX;sl.setPointerCapture(e.pointerId)});
+sl.addEventListener("pointermove",e=>{if(!drag)return;if(!moved&&Math.abs(e.clientX-downX)<4)return;if(!moved){moved=true;mv.stop()}mv.set(fromX(e))});
+const end=e=>{if(!drag)return;drag=false;if(!moved){go(Math.round(fromX(e)));return}const v=Math.max(-8,Math.min(8,mv.getVelocity()));go(Math.round(pos+Math.max(-.6,Math.min(.6,v*.12))),v)};
 sl.addEventListener("pointerup",end);sl.addEventListener("pointercancel",end);
 sl.addEventListener("keydown",e=>{const d={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];if(d){e.preventDefault();go(target+d)}else if(e.key==="Home"){e.preventDefault();go(0)}else if(e.key==="End"){e.preventDefault();go(3)}});
 // Swiping the picture moves one section at a time.
-let sx=null,sy=null;
-$("view").addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
-$("view").addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;sx=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5)go(target+(dx<0?1:-1))});
+let sx=null,sy0=null;
+$("view").addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy0=e.touches[0].clientY},{passive:true});
+$("view").addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy0;sx=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5)go(target+(dx<0?1:-1))});
 
 // --- steps panel ---
 function renderPanel(){
@@ -198,7 +202,15 @@ function renderPanel(){
  const timer=s.loads?`<div class="timer"><span>Rest <b id="restOut"></b></span><button type="button" data-rest="60">60 s</button><button type="button" data-rest="90">90 s</button><button type="button" data-rest="120">120 s</button></div>`:"";
  $("panel").innerHTML=loads+rows+timer; showRest();
 }
-$("toggle").onclick=()=>{const open=$("toggle").getAttribute("aria-expanded")!=="true";$("toggle").setAttribute("aria-expanded",String(open));$("panel").hidden=!open};
+$("toggle").onclick=()=>{
+ const open=$("toggle").getAttribute("aria-expanded")!=="true",pn=$("panel");
+ $("toggle").setAttribute("aria-expanded",String(open));
+ if(reduce){pn.hidden=!open;return}
+ if(open){pn.hidden=false;const h=pn.offsetHeight;pn.style.overflow="hidden";
+  animate(pn,{height:[0,h],opacity:[0,1]},{duration:.28,ease:"easeOut"}).then(()=>{pn.style.height=pn.style.overflow=pn.style.opacity=""});}
+ else{pn.style.overflow="hidden";
+  animate(pn,{height:[pn.offsetHeight,0],opacity:0},{duration:.2,ease:"easeIn"}).then(()=>{if($("toggle").getAttribute("aria-expanded")!=="true")pn.hidden=true;pn.style.height=pn.style.overflow=pn.style.opacity=""});}
+};
 $("panel").addEventListener("change",e=>{const c=e.target;if(c.dataset.i===undefined)return;ticks[idx][+c.dataset.i]=c.checked?1:0;const keep=document.activeElement;paint();const again=$("panel").querySelector(`input[data-i="${c.dataset.i}"]`);if(keep===c&&again)again.focus()});
 $("dayCheck").onclick=()=>{const b=$("dayCheck");b.setAttribute("aria-pressed",String(b.getAttribute("aria-pressed")!=="true"))};
 let restEnd=0,restInt=0;
@@ -211,11 +223,15 @@ document.addEventListener("click",e=>{
 
 // --- video sheet ---
 let cur=null,lastFocus=null;
+const sheet=$("sheet"),sy=motionValue(0),SHEET={type:"spring",visualDuration:.35,bounce:.15};
+sy.on("change",v=>{sheet.style.transform=`translateY(${Math.max(0,v)}px)`});
+const moveSheet=(to,velocity=0)=>reduce?(sy.jump(to),Promise.resolve()):animate(sy,to,{...SHEET,velocity});
 function openSheet(name,key,from){
  cur={name,list:V[key]};lastFocus=from;$("shTitle").textContent=name;
  $("chips").innerHTML=cur.list.length>1?cur.list.map(([,l],i)=>`<button class="vchip" type="button" data-i="${i}" aria-pressed="false">${l}</button>`).join(""):"";
  $("chips").hidden=cur.list.length<2;show(0);
- document.body.classList.add("sheet-open");$("sheet").setAttribute("aria-hidden","false");$("shClose").focus();
+ document.body.classList.add("sheet-open");sheet.setAttribute("aria-hidden","false");sheet.style.visibility="visible";
+ sy.jump(sheet.offsetHeight+40);moveSheet(0);$("shClose").focus({preventScroll:true});
 }
 function show(i){
  const [id,label,ch]=cur.list[i];
@@ -224,17 +240,18 @@ function show(i){
  // Muted autoplay is the only autoplay iPhone allows inline; tap the video for sound.
  $("vid").innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1" title="${label} — ${ch}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
 }
-function closeSheet(){
- document.body.classList.remove("sheet-open");$("sheet").setAttribute("aria-hidden","true");
- setTimeout(()=>{if(!document.body.classList.contains("sheet-open"))$("vid").innerHTML=""},260); // removing the iframe stops playback
- if(lastFocus)lastFocus.focus();
+function closeSheet(v){
+ document.body.classList.remove("sheet-open");sheet.setAttribute("aria-hidden","true");
+ $("vid").innerHTML=""; // removing the iframe stops playback
+ moveSheet(sheet.offsetHeight+40,typeof v==="number"?v:0).then(()=>{if(!document.body.classList.contains("sheet-open"))sheet.style.visibility="hidden"});
+ if(lastFocus)lastFocus.focus({preventScroll:true});
 }
 $("shClose").onclick=closeSheet;$("scrim").onclick=closeSheet;
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("sheet-open"))closeSheet()});
 let y0=null;
-$("sheet").addEventListener("touchstart",e=>{if(e.target.closest(".vid,.chips"))return;y0=e.touches[0].clientY},{passive:true});
-$("sheet").addEventListener("touchmove",e=>{if(y0===null)return;$("sheet").style.transform=`translateY(${Math.max(0,e.touches[0].clientY-y0)}px)`},{passive:true});
-$("sheet").addEventListener("touchend",e=>{if(y0===null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;$("sheet").style.transform="";if(dy>90)closeSheet()});
+sheet.addEventListener("touchstart",e=>{if(e.target.closest(".vid,.chips"))return;y0=e.touches[0].clientY;sy.stop()},{passive:true});
+sheet.addEventListener("touchmove",e=>{if(y0===null)return;sy.set(Math.max(0,e.touches[0].clientY-y0))},{passive:true});
+sheet.addEventListener("touchend",e=>{if(y0===null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;const v=Math.max(-3000,Math.min(3000,sy.getVelocity()));if(dy>90||v>600)closeSheet(v);else moveSheet(0,v)});
 draw();
 </script>
 </body>
