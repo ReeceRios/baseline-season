@@ -81,6 +81,18 @@ html{overflow-x:clip}
 #eBottom p{margin:0 0 10px;font-size:17px}#eBottom .eTag{color:#D9DBEA;margin-bottom:28px}
 .ePills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}.ePills span{border:1px solid rgba(255,255,255,.75);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700}
 #eGo{min-height:56px;border:0;border-radius:999px;background:#fff;color:#202020;font-size:18px;font-weight:700;cursor:pointer;transition:transform .18s cubic-bezier(.3,1.5,.5,1)}#eGo:active{transform:scale(.97)}
+/* day complete: the ticket, alone on black */
+#tix{position:fixed;inset:0;z-index:30;opacity:0;transition:opacity .35s ease;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#tix[hidden]{display:none}#tix.on{opacity:1}
+#tixC{display:block;touch-action:manipulation;outline:none}#tixC:focus-visible{outline:2px solid #B9DDFF;outline-offset:-6px;border-radius:12px}
+#tixHint{margin:0;height:14px;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#6F7FA3;transition:opacity .5s}#tixHint.off{opacity:0}
+#tixLive{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#tixPlain{display:none;margin:0;padding:0 24px;max-width:320px;text-align:center;line-height:1.3}
+#tixPlain b{display:block;margin-bottom:10px;font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.05;color:#B9DDFF;text-transform:lowercase}
+#tixPlain span{font-size:13px;color:#8B9AC0}
+#tix.plain #tixC,#tix.plain #tixHint{display:none}#tix.plain #tixPlain,#tix.still #tixPlain{display:block}#tix.still:not(.plain) #tixPlain b{display:none}
+#tixBack{position:absolute;left:0;right:0;bottom:calc(28px + env(safe-area-inset-bottom));margin:0 auto;width:max-content;min-height:44px;padding:0 20px;border:1px solid rgba(185,221,255,.45);border-radius:999px;background:none;color:#B9DDFF;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;opacity:0;visibility:hidden;transition:opacity .5s,visibility .5s,transform .18s}
+#tixBack.on{opacity:1;visibility:visible}#tixBack:active{transform:scale(.97)}
 /* bottom navigation */
 #nav{--nc:#7C68FA;--nt:#4B3BC4;position:fixed;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));z-index:5;max-width:460px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:hidden;border-radius:26px;border:1px solid rgba(32,32,32,.08);background:rgba(246,247,252,.88);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 8px 28px rgba(26,18,80,.16)}
 #nav button{position:relative;z-index:1;min-height:64px;border:0;background:none;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -130,7 +142,7 @@ body.sheet-open .scrim{opacity:1;pointer-events:auto}
 .vchip[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
 .credit{font-size:12px;color:var(--muted)}
 @media (orientation:landscape) and (max-height:520px){.vid{width:min(100%,calc((100dvh - 170px)*16/9));align-self:center}}
-@media (prefers-reduced-motion:reduce){.scrim,.toggle svg{transition:none}.panel.enter>*{animation:none}.toggle,.daycheck,.timer button,.vchip,.x,.play i{transition:none}}
+@media (prefers-reduced-motion:reduce){#tix,#tixBack,#tixHint{transition:none}.scrim,.toggle svg{transition:none}.panel.enter>*{animation:none}.toggle,.daycheck,.timer button,.vchip,.x,.play i{transition:none}}
 /* app additions */
 .col{display:flex;flex-direction:column;gap:8px}
 .dayline{margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:17px}
@@ -187,6 +199,13 @@ table.rm td:nth-child(2),table.rm td:nth-child(3){white-space:nowrap}
 </style>
 </head>
 <body>
+<div id="tix" role="dialog" aria-modal="true" aria-label="Day complete" hidden>
+  <canvas id="tixC" role="button" tabindex="0" aria-label="Ticket. Press for a new phrase."></canvas>
+  <p id="tixHint">Tap the ticket</p>
+  <p id="tixPlain"><b id="tixText"></b><span id="tixSub"></span></p>
+  <p id="tixLive" aria-live="polite"></p>
+  <button id="tixBack" type="button">Return to dashboard</button>
+</div>
 <div id="entry" role="dialog" aria-modal="true" aria-label="Baseline season">
   <div class="glow" aria-hidden="true"></div>
   <canvas id="eArt" aria-hidden="true"></canvas>
@@ -482,6 +501,7 @@ $("panel").addEventListener("change",e=>{
  if(!allWas&&allDone())state.done[T]=1; // finishing all four sections marks the day done
  save();
  const keep=document.activeElement;paint();renderTop();renderDash();
+ if(!allWas&&allDone())setTimeout(showTicket,reduce?0:500); // all four sections finished: the ticket takes the screen
  const again=$("panel").querySelector(`input[data-i="${i}"]`);if(keep===c&&again)again.focus({preventScroll:true});
  if(!c.checked||!again||reduce)return;
  burst(...centre(again),"#7C68FA",18);animate(again,{scale:[.6,1]},{type:"spring",stiffness:170,damping:15});
@@ -694,6 +714,212 @@ function makeRunner(cv){
  size();
  return {start(){if(reduce)frame(300);else raf=requestAnimationFrame(loop)},stop(){cancelAnimationFrame(raf)}};
 }
+
+// --- day complete: a thick 3D ticket (WebGL). Phrase on the front, season progress on the back; a press spins it to a new phrase ---
+const PHRASES=["burger slut","plant a garden, believe in tomorrow","learn to proceed without certainty","don't play it cool","The Sun is gone, but I have a light","luck happens when hard work meets opportunity","Mango","locally hated","Discipline is self love","Boom Boom","Happiness is an inside job","Solvem Probler","Need Money for Hummus","Stay Ugly Homies","War Bad, Boobs Good","Might have to call in thicc today"];
+function makeTicket(cv,o){
+ const gl=cv.getContext("webgl",{alpha:false,antialias:true,powerPreference:"high-performance"});if(!gl)return null;
+ const TAU=Math.PI*2,W=300,H=192,T=16,R=4.4,NB=13,K=7,DZ=.5;
+ const PAPER="#B9DDFF",SIDE=[.56,.76,.97],INK=[.07,.20,.50],INK_LOW=[.035,.11,.30];
+ const FONT='"Inter Tight","Helvetica Neue",Helvetica,Arial,sans-serif';
+ const FR=11,STUB=38,PX=FR+STUB+12,PW=W-2*PX,PY=FR+11,PH=H-2*PY; // frame, stub and text panel
+ let stamp=["","",""],back={big:"",side:"",cap:"",wk:0,part:0},phrase="",bag=[];
+
+ // outline: clockwise from the top-left, y down, with bites along the short edges
+ const OUT=[[0,0],[W,0]],pitch=H/NB;
+ for(let i=0;i<NB;i++){const y=(i+.5)*pitch;for(let k=0;k<=8;k++){const a=-Math.PI/2+Math.PI*k/8;OUT.push([W-R*Math.cos(a),y+R*Math.sin(a)])}}
+ OUT.push([W,H],[0,H]);
+ for(let i=NB-1;i>=0;i--){const y=(i+.5)*pitch;for(let k=0;k<=8;k++){const a=Math.PI/2-Math.PI*k/8;OUT.push([R*Math.cos(a),y+R*Math.sin(a)])}}
+
+ // --- the printed sides, drawn on 2D canvases and used as textures ---
+ const mk=(w,h)=>{const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.setTransform(w/W,0,0,h/H,0,0);return [c,x]};
+ const [paperC,paperX]=mk(1024,512),[inkFC,inkFX]=mk(2048,1024),[inkBC,inkBX]=mk(2048,1024);
+ const track=(x,v)=>{try{x.letterSpacing=v}catch(e){}};
+ function drawPaper(){
+  const x=paperX;x.beginPath();OUT.forEach(([a,b],i)=>i?x.lineTo(a,b):x.moveTo(a,b));x.closePath();
+  x.fillStyle=PAPER;x.fill();x.save();x.clip();
+  for(let y=1.5;y<H;y+=3){x.fillStyle="rgba(255,255,255,.10)";x.fillRect(0,y,W,.8);x.fillStyle="rgba(20,50,110,.035)";x.fillRect(0,y+.8,W,.6)}
+  let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;
+  for(let i=0;i<5200;i++){x.fillStyle=rnd()<.5?"rgba(255,255,255,.10)":"rgba(20,50,110,.06)";x.fillRect(rnd()*W,rnd()*H,.5+rnd()*.9,.4+rnd()*.5)}
+  x.restore();
+ }
+ function date(x,cx,cy,size,rot){ // day · month · year, set sideways on the stubs
+  x.save();x.translate(cx,cy);x.rotate(rot);x.scale(.8,1);x.font=`700 ${size}px ${FONT}`;x.textBaseline="middle";
+  const gap=size*.07,dot=size*.46,items=[];stamp.forEach((g,i)=>{if(i)items.push(null);items.push(...g)});
+  const ws=items.map(ch=>ch?x.measureText(ch).width+gap:dot),tot=ws.reduce((a,b)=>a+b,0)-gap;
+  let px=-tot/2;items.forEach((ch,i)=>{if(ch)x.fillText(ch,px,1);else{x.beginPath();x.ellipse(px+(dot-gap)/2,0,size*.1,size*.08,0,0,TAU);x.fill()}px+=ws[i]});
+  x.restore();
+ }
+ function frame(x){
+  x.clearRect(0,0,W,H);x.fillStyle=x.strokeStyle="#000";x.lineWidth=1.8;x.strokeRect(FR,FR,W-2*FR,H-2*FR);
+  x.beginPath();x.moveTo(FR+STUB,FR);x.lineTo(FR+STUB,H-FR);x.moveTo(W-FR-STUB,FR);x.lineTo(W-FR-STUB,H-FR);x.stroke();
+  date(x,FR+STUB/2,H/2,25,Math.PI/2);date(x,W-FR-STUB/2,H/2,25,-Math.PI/2);
+ }
+ function fit(x,words){ // largest size that fits; short phrases stack a word per line
+  const wrap=()=>{const L=[];let cur="";for(const w of words){const t=cur?cur+" "+w:w;if(cur&&x.measureText(t).width>PW){L.push(cur);cur=w}else cur=t}if(cur)L.push(cur);return L};
+  const ok=(L,size)=>L.length*size*1.04<=PH&&L.every(l=>x.measureText(l).width<=PW);
+  for(let size=58;size>12;size--){x.font=`800 ${size}px ${FONT}`;if(words.length<=4&&ok(words,size))return [words,size];const L=wrap();if(ok(L,size))return [L,size]}
+  x.font=`800 12px ${FONT}`;return [wrap(),12];
+ }
+ function drawFront(){
+  const x=inkFX;frame(x);track(x,"-0.6px");
+  const [L,size]=fit(x,phrase.toLowerCase().split(/\s+/)),lh=size*1.04;
+  x.font=`800 ${size}px ${FONT}`;x.textBaseline="alphabetic";x.textAlign="left";
+  const y0=PY+(PH-L.length*lh)/2+size*.8;L.forEach((l,i)=>x.fillText(l,PX,y0+i*lh));track(x,"0px");
+ }
+ function drawBack(){
+  const x=inkBX;frame(x);x.textAlign="left";x.textBaseline="alphabetic";
+  x.font=`700 15px ${FONT}`;x.fillText("day",PX,PY+13);
+  track(x,"-3px");x.font=`800 86px ${FONT}`;const nw=x.measureText(back.big).width;x.fillText(back.big,PX-3,PY+92);track(x,"0px");
+  x.font=`700 21px ${FONT}`;x.fillText(back.side,PX+nw+4,PY+92);
+  x.font=`700 11px ${FONT}`;x.fillText(back.cap,PX,PY+PH-13);
+  const g=3,sw=(PW-g*11)/12,sy=PY+PH-7,sh=7;x.lineWidth=1.2;
+  for(let i=0;i<12;i++){const sx=PX+i*(sw+g);x.strokeRect(sx+.6,sy+.6,sw-1.2,sh-1.2);if(i<back.wk)x.fillRect(sx,sy,sw,sh);else if(i===back.wk)x.fillRect(sx,sy,sw*back.part,sh)}
+ }
+
+ // --- WebGL ---
+ const VS=`attribute vec3 aP;attribute vec3 aN;attribute vec2 aT;uniform mat4 uM,uR;uniform float uZ;varying vec3 vN;varying vec2 vT;
+void main(){vN=(uR*vec4(aN,0.)).xyz;vT=aT;gl_Position=uM*vec4(aP.xy,aP.z+uZ,1.);}`;
+ const FS=`precision mediump float;uniform sampler2D uTex;uniform vec4 uC;uniform vec3 uK;varying vec3 vN;varying vec2 vT;
+void main(){
+ if(uK.x>2.5){float r=length(vT-.5)*2.;float g=pow(max(0.,1.-r),2.2);gl_FragColor=vec4(uC.rgb*g*uC.a,1.);return;}
+ vec4 t=uK.x>.5?texture2D(uTex,vT):vec4(1.);
+ if(t.a<uK.z)discard;
+ vec3 base=(uK.x>.5&&uK.x<1.5)?t.rgb*uC.rgb:uC.rgb;
+ vec3 n=normalize(vN);
+ vec3 L=normalize(vec3(-.35,.55,.75));vec3 L2=normalize(vec3(.7,-.25,.5));
+ float d=max(dot(n,L),0.);float f=max(dot(n,L2),0.);
+ float s=pow(max(dot(n,normalize(L+vec3(0.,0.,1.))),0.),26.)*uK.y;
+ gl_FragColor=vec4(base*(.56+.58*d+.12*f)+vec3(s),t.a);}`;
+ const sh=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s};
+ const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);gl.useProgram(pr);
+ const U=n=>gl.getUniformLocation(pr,n),uM=U("uM"),uR=U("uR"),uZ=U("uZ"),uC=U("uC"),uK=U("uK");
+ // geometry: front quad, back quad, floor-light quad, then the extruded edge
+ const v=[],put=(...a)=>v.push(...a),hw=W/2,hh=H/2,CORN=[[-1,-1],[1,-1],[1,1],[-1,-1],[1,1],[-1,1]];
+ const quad=(nz,flip)=>CORN.forEach(([a,b])=>{const u=(a+1)/2;put(a*hw,b*hh,0,0,0,nz,flip?1-u:u,(1-b)/2)});
+ quad(1,false);quad(-1,true);CORN.forEach(([a,b])=>put(a,b,0,0,0,1,(a+1)/2,(b+1)/2));
+ const P3=OUT.map(([x,y])=>[x-hw,hh-y]);let sideN=0;
+ for(let i=0;i<P3.length;i++){const a=P3[i],b=P3[(i+1)%P3.length],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);if(l<1e-4)continue;
+  const nx=-dy/l,ny=dx/l,z=T/2;[[a,z],[b,z],[b,-z],[a,z],[b,-z],[a,-z]].forEach(([p,pz])=>put(p[0],p[1],pz,nx,ny,0,0,0));sideN+=6}
+ gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(v),gl.STATIC_DRAW);
+ [["aP",3,0],["aN",3,12],["aT",2,24]].forEach(([n,s,off])=>{const l=gl.getAttribLocation(pr,n);gl.enableVertexAttribArray(l);gl.vertexAttribPointer(l,s,gl.FLOAT,false,32,off)});
+ const aniso=gl.getExtension("EXT_texture_filter_anisotropic");
+ function tex(src,t){
+  t=t||gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,src);gl.generateMipmap(gl.TEXTURE_2D);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  if(aniso)gl.texParameterf(gl.TEXTURE_2D,aniso.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(8,gl.getParameter(aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
+  return t;
+ }
+ drawPaper();const tPaper=tex(paperC),tFront=tex(inkFC),tBack=tex(inkBC);
+ const msaa=gl.getParameter(gl.SAMPLES)>1,CUT=msaa?.03:.5;
+ gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);if(msaa)gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);gl.clearColor(0,0,0,1);
+
+ const mul=(a,b)=>{const m=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+r]*b[c*4+k];m[c*4+r]=s}return m};
+ const rY=a=>{const c=Math.cos(a),s=Math.sin(a);return [c,0,-s,0,0,1,0,0,s,0,c,0,0,0,0,1]};
+ const rX=a=>{const c=Math.cos(a),s=Math.sin(a);return [1,0,0,0,0,c,s,0,0,-s,c,0,0,0,0,1]};
+ const rZ=a=>{const c=Math.cos(a),s=Math.sin(a);return [c,s,0,0,-s,c,0,0,0,0,1,0,0,0,0,1]};
+ const tr=(x,y,z)=>[1,0,0,0,0,1,0,0,0,0,1,0,x,y,z,1],sc3=(x,y,z)=>[x,0,0,0,0,y,0,0,0,0,z,0,0,0,0,1],ID=new Float32Array(tr(0,0,0));
+
+ let S=1,PV,box={x:0,y:0,w:0,h:0};
+ function size(){
+  const vw=innerWidth,vh=innerHeight;S=Math.min(vw*.8,380,vh*.56)/W;
+  const cw=Math.min(vw,Math.round(W*S*1.3)),ch=Math.round(W*S*1.2),dpr=Math.min(devicePixelRatio||1,3);
+  cv.style.width=cw+"px";cv.style.height=ch+"px";cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr);gl.viewport(0,0,cv.width,cv.height);
+  const f=1/Math.tan(22*Math.PI/360),D=f*ch/(2*S),n=D-320,fa=D+320,asp=cw/ch;
+  PV=mul([f/asp,0,0,0,0,f,0,0,0,0,(fa+n)/(n-fa),-1,0,0,2*fa*n/(n-fa),0],tr(0,14,-D));
+  box={x:cw/2,y:ch/2-14*S,w:W*S/2+14,h:H*S/2+18};
+ }
+
+ // --- motion: lands on the phrase, then turns slowly; a press spins it to a new phrase ---
+ let th=0,vel=0,target=0,mode="hold",pending=null,sc=1,scV=0,scT=1,hop=0,hopV=0,frozen=null,turned=0,landed=false,told=false,run=false,last=0,raf=0;
+ const cruise=a=>1.25*(1-.62*Math.cos(2*a)); // lingers on each face, whips through the edge
+ const next=()=>{if(!bag.length)bag=o.phrases.filter(p=>p!==phrase).sort(()=>Math.random()-.5);return bag.pop()};
+ const setPhrase=p=>{phrase=p;drawFront();tex(inkFC,tFront);o.onPhrase&&o.onPhrase(p);if(o.still)render(0)};
+ function press(){
+  if(!run)return;const p=next();o.onPress&&o.onPress();
+  if(o.still){setPhrase(p);return}
+  if(Math.cos(th)>0)pending=p;else setPhrase(p);
+  target=Math.ceil((th+Math.PI*.9)/TAU)*TAU;mode="settle";hopV=150;landed=true;
+ }
+ const inside=e=>{const r=cv.getBoundingClientRect();return Math.abs(e.clientX-r.left-box.x)<box.w&&Math.abs(e.clientY-r.top-box.y)<box.h};
+ let down=false;
+ cv.addEventListener("pointerdown",e=>{if(inside(e)){down=true;scT=.92}});
+ addEventListener("pointerup",e=>{if(!down)return;down=false;scT=1;if(e.target===cv&&inside(e))press()});
+ addEventListener("pointercancel",()=>{down=false;scT=1});
+ cv.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();press()}});
+ addEventListener("resize",()=>{if(run){size();if(o.still)render(0)}});
+
+ function step(dt){
+  if(mode==="settle"){vel+=(-38*(th-target)-8.5*vel)*dt;th+=vel*dt;if(Math.abs(th-target)<.02&&Math.abs(vel)<.5){mode="cruise";landed=true}}
+  else if(mode==="cruise"){vel+=(cruise(th)-vel)*(1-Math.exp(-dt*4));th+=vel*dt;if(th>2*TAU){th-=TAU;target-=TAU}}
+  if(landed&&!told){turned+=Math.abs(vel*dt);if(turned>=2*TAU){told=true;o.onCycles&&o.onCycles()}}
+  if(pending&&Math.cos(th)<-.05){setPhrase(pending);pending=null}
+  scV+=(-320*(sc-scT)-24*scV)*dt;sc+=scV*dt;hopV+=(-190*hop-15*hopV)*dt;hop+=hopV*dt;
+ }
+ function render(t){
+  const a=frozen==null?th:frozen,idle=o.still?0:1;
+  const Rm=mul(rZ(-.05+Math.sin(t*.7)*.012*idle),mul(rX(.17+Math.sin(t*.9)*.025*idle),rY(a)));
+  const M=mul(PV,mul(tr(0,hop+Math.sin(t*1.3)*2.5*idle,0),mul(Rm,sc3(sc,sc,sc)))),nz=Rm[10];
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.disable(gl.DEPTH_TEST);gl.depthMask(false); // floor light
+  gl.uniformMatrix4fv(uM,false,mul(tr(0,-.66,0),sc3((.3+.42*Math.abs(Math.cos(a)))*sc,.11,1)));gl.uniformMatrix4fv(uR,false,ID);
+  gl.uniform1f(uZ,0);gl.uniform4f(uC,.14,.34,.86,.42);gl.uniform3f(uK,3,0,0);gl.drawArrays(gl.TRIANGLES,12,6);
+  gl.enable(gl.DEPTH_TEST);gl.depthMask(true);
+  gl.uniformMatrix4fv(uM,false,M);gl.uniformMatrix4fv(uR,false,Rm);
+  gl.uniform1f(uZ,0);gl.uniform4f(uC,SIDE[0],SIDE[1],SIDE[2],1);gl.uniform3f(uK,0,.05,CUT);gl.drawArrays(gl.TRIANGLES,18,sideN); // edge
+  const face=(first,dir,ink)=>{ // paper, then the raised ink
+   gl.bindTexture(gl.TEXTURE_2D,tPaper);gl.uniform1f(uZ,dir*T/2);gl.uniform4f(uC,1,1,1,1);gl.uniform3f(uK,1,.07,CUT);gl.drawArrays(gl.TRIANGLES,first,6);
+   gl.bindTexture(gl.TEXTURE_2D,ink);
+   for(let i=1;i<=K;i++){const c=i===K?INK:INK_LOW;gl.uniform1f(uZ,dir*(T/2+i*DZ));gl.uniform4f(uC,c[0],c[1],c[2],1);gl.uniform3f(uK,2,i===K?.3:0,CUT);gl.drawArrays(gl.TRIANGLES,first,6)}
+  };
+  if(nz>-.14)face(0,1,tFront);if(nz<.14)face(6,-1,tBack);
+ }
+ function loop(ms){
+  if(!run)return;const t=ms/1000,dt=Math.min(.05,t-last||.016);last=t;
+  step(dt/2);step(dt/2);render(t);raf=requestAnimationFrame(loop);
+ }
+ document.addEventListener("visibilitychange",()=>{if(!run||o.still)return;cancelAnimationFrame(raf);if(!document.hidden){last=0;raf=requestAnimationFrame(loop)}});
+
+ return {
+  // d: {stamp:[dd,mm,yyyy], back:{big,side,cap,wk,part}}
+  async start(d){
+   stamp=d.stamp;back=d.back;
+   try{await Promise.all([document.fonts.load(`800 40px "Inter Tight"`),document.fonts.load(`700 20px "Inter Tight"`)])}catch(e){}
+   phrase=next();drawFront();tex(inkFC,tFront);drawBack();tex(inkBC,tBack);o.onPhrase&&o.onPhrase(phrase);
+   size();pending=null;vel=scV=hop=hopV=turned=0;scT=1;landed=told=false;frozen=null;run=true;
+   if(o.still){th=0;sc=1;mode="hold";render(0);return}
+   th=-Math.PI;target=0;mode="settle";sc=.55;last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
+  },
+  stop(){run=false;cancelAnimationFrame(raf)},
+  press,show:p=>setPhrase(p),freeze(a){frozen=a;sc=1;scV=hop=hopV=0},
+  get phrase(){return phrase},get angle(){return th},get turned(){return turned}
+ };
+}
+let ticket,tixOpen=false;
+function showTicket(){
+ if(tixOpen)return;tixOpen=true;
+ const el=$("tix"),cv=$("tixC"),back=$("tixBack"),hint=$("tixHint"),p2=n=>String(n).padStart(2,"0"),n=days+1;
+ const info=days<0?{big:"0",side:"of 84",cap:"season starts "+nice(day(START)).toLowerCase(),wk:-1,part:0}
+  :days>=84?{big:String(n),side:"days in",cap:"season complete",wk:12,part:0}
+  :{big:String(n),side:"of 84",cap:`week ${w} of 12`,wk:w-1,part:(days%7+1)/7};
+ const sub=days<0?"Pre-season · starts "+nice(day(START)):days>=84?`Day ${n} · season complete`:`Day ${n} of 84`;
+ back.classList.remove("on");hint.classList.remove("off");el.hidden=false;$("wrap").inert=$("nav").inert=true;say("tixSub",sub);
+ if(ticket===undefined){try{ticket=makeTicket(cv,{phrases:PHRASES,still:reduce,onPhrase(p){say("tixText",p);say("tixLive",p+". "+sub)},onPress(){hint.classList.add("off")},onCycles(){back.classList.add("on")}})}catch(e){ticket=null}}
+ el.classList.toggle("plain",!ticket);el.classList.toggle("still",reduce);
+ if(ticket)ticket.start({stamp:[p2(now.getDate()),p2(now.getMonth()+1),String(now.getFullYear())],back:info});
+ else{const p=PHRASES[Math.floor(Math.random()*PHRASES.length)];say("tixText",p);say("tixLive",p+". "+sub)}
+ if(!ticket||reduce){back.classList.add("on");back.focus({preventScroll:true})}else cv.focus({preventScroll:true});
+ el.offsetWidth;el.classList.add("on");
+}
+function hideTicket(){
+ if(!tixOpen)return;tixOpen=false;const el=$("tix");
+ $("wrap").inert=$("nav").inert=false;showTab("dash");el.classList.remove("on");
+ setTimeout(()=>{if(tixOpen)return;ticket&&ticket.stop();el.hidden=true},reduce?0:360);
+}
+$("tixBack").onclick=hideTicket;
+$("tix").addEventListener("keydown",e=>{if(e.key==="Escape"&&$("tixBack").classList.contains("on"))hideTicket()});
 
 // --- entry: runner on black, then the opening screen rises under it, then Start today lifts the curtain ---
 function enter(){

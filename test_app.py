@@ -15,7 +15,7 @@ def ok(name,cond,info=""):
     if not cond: fails.append(name)
 OLD={"baselines":{"hang_clean_lb":135,"squat_lb":225,"deadlift_lb":325,"reach_in":114},"done":{"2026-11-14":1},"ticks":{"2026-11-14":[0,1]},"logs":[{"id":1,"type":"workout","date":"2026-11-14","label":"Gym test","details":"tried the app"}]}
 with sync_playwright() as pw:
-    b=pw.chromium.launch(channel="chrome")
+    b=pw.chromium.launch(channel="chrome",args=["--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader","--ignore-gpu-blocklist"])
     def page(date,store=None,reduced=False,size=(390,844)):
         ctx=b.new_context(viewport={"width":size[0],"height":size[1]},has_touch=True,reduced_motion="reduce" if reduced else "no-preference"); p=ctx.new_page()
         p.errs=[]; p.on("pageerror",lambda e:None if "Access is denied for this document" in str(e) else p.errs.append(str(e)))  # the blocked YouTube frame throws that one in this sandbox
@@ -61,7 +61,25 @@ with sync_playwright() as pw:
         p.focus("#slider"); p.keyboard.press("Home"); [p.keyboard.press("ArrowRight") for _ in range(sec)]; p.wait_for_timeout(900)
         for i in ids: p.click(f"#panel input[data-i='{i}']"); p.wait_for_timeout(80)
     ok("day auto-marked done",p.get_attribute("#dayCheck","aria-pressed")=="true" and p.evaluate("JSON.parse(localStorage.getItem('baseline-season-v2')).done['2026-11-16']")==1)
-    p.click("#nav [data-tab=dash]"); p.wait_for_timeout(400)
+    # the ticket takes the screen; the button comes after two turns (a press spins it, so presses bring it sooner)
+    p.wait_for_timeout(1500)
+    ok("ticket screen shows on its own",p.is_visible("#tix") and p.is_visible("#tixC") and p.evaluate("document.getElementById('wrap').inert&&document.getElementById('nav').inert"))
+    import io
+    from PIL import Image
+    def blue(pg):
+        im=Image.open(io.BytesIO(pg.locator("#tixC").screenshot())).convert("RGB"); px=list(im.getdata())
+        return sum(1 for r,g,bb in px[::7] if bb>150 and g>120 and r<210 and bb>r+20)
+    ok("ticket is drawn",blue(p)>400,str(blue(p)))
+    ok("return button waits",p.evaluate("getComputedStyle(document.getElementById('tixBack')).visibility")=="hidden")
+    first=txt(p,"#tixText"); ok("a phrase is picked",len(first)>3 and "Day 1 of 84" in txt(p,"#tixLive"),txt(p,"#tixLive"))
+    box=p.locator("#tixC").bounding_box(); seen={first}
+    for _ in range(3):
+        p.mouse.click(box["x"]+box["width"]/2,box["y"]+box["height"]/2-10); p.wait_for_timeout(1500); seen.add(txt(p,"#tixText"))
+    ok("pressing the ticket gives new phrases",len(seen)==4,str(seen))
+    p.wait_for_function("document.getElementById('tixBack').classList.contains('on')",timeout=40000); p.wait_for_timeout(700)
+    ok("return button appears after two turns",p.is_visible("#tixBack") and txt(p,"#tixBack")=="Return to dashboard")
+    p.click("#tixBack"); p.wait_for_timeout(700)
+    ok("button returns to the dashboard",not p.is_visible("#tix") and p.is_visible("#t-dash") and not p.evaluate("document.getElementById('wrap').inert"))
     ok("dashboard counts the day","1 of 84" in txt(p,"#seasonMeta"),txt(p,"#seasonMeta"))
     ok("dashboard headline is the week",txt(p,"#dashH")=="Week 1 of 12",txt(p,"#dashH"))
     ok("week rows",p.locator("#weekRows .wk").count()==7 and p.locator("#weekRows .wk.done").count()==1 and "Mon" in txt(p,"#weekRows .wk.now"))
@@ -106,6 +124,18 @@ with sync_playwright() as pw:
     ok("video opens",q.locator("#vid iframe").count()==1 and "youtube.com/embed/" in q.get_attribute("#vid iframe","src"))
     q.click("#shClose"); q.wait_for_timeout(700); ok("video closes",q.evaluate("getComputedStyle(document.getElementById('sheet')).visibility")=="hidden" and q.locator("#vid iframe").count()==0)
     ok("320px: no sideways scroll",q.evaluate("document.documentElement.scrollWidth")==320); ok("no errors small",not q.errs,str(q.errs))
+    # ticket with reduced motion, and without WebGL: the phrase, the day and the button are there at once
+    for label,nogl in (("reduced motion",False),("no WebGL",True)):
+        t=page("2026-11-18T08:00:00",{"baselines":{},"done":{},"ticks":{},"logs":[],"t2":{"2026-11-18":{"plyo":[0,1,2,3,4,5,6,7,8,9],"mob":[0,1,2,3,4,5,6,7,8,9],"cardio":[0,1,2,3,4,5,6,7,8,9]}}},reduced=True)
+        if nogl: t.add_init_script("const g=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(k,...a){return /webgl/.test(k)?null:g.call(this,k,...a)}"); t.reload()
+        t.wait_for_timeout(700)
+        if t.locator("#entry").count(): t.click("#eGo"); t.wait_for_timeout(300)
+        t.focus("#slider"); t.keyboard.press("End"); t.wait_for_timeout(300); t.click("#toggle"); t.wait_for_timeout(300)
+        t.click("#panel input[data-i='0']"); t.wait_for_timeout(600)  # Wednesday lifting is pick-one: one tick finishes the day
+        ok(f"ticket, {label}: shows with the button",t.is_visible("#tix") and t.is_visible("#tixBack") and "Day 3 of 84" in t.text_content("#tixSub") and t.is_visible("#tixSub"),t.text_content("#tixSub"))
+        ok(f"ticket, {label}: canvas {'hidden' if nogl else 'drawn'}",(not t.is_visible("#tixC") and len(t.text_content("#tixText"))>3 and t.is_visible("#tixText")) if nogl else blue(t)>400)
+        t.click("#tixBack"); t.wait_for_timeout(300); ok(f"ticket, {label}: returns",not t.is_visible("#tix") and t.is_visible("#t-dash")); ok(f"ticket, {label}: no errors",not t.errs,str(t.errs))
+        t.context.close()
     # sideways scroll, on a page with a running clock (a frozen clock also freezes the slide-in animation)
     r=b.new_context(viewport={"width":390,"height":844}).new_page(); r.goto(url); start(r); wide=[]
     for t in ("dash","prog","today","prog","dash"):
