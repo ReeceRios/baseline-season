@@ -501,7 +501,7 @@ $("panel").addEventListener("change",e=>{
  if(!allWas&&allDone())state.done[T]=1; // finishing all four sections marks the day done
  save();
  const keep=document.activeElement;paint();renderTop();renderDash();
- if(!allWas&&allDone())setTimeout(showTicket,reduce?0:500); // all four sections finished: the ticket takes the screen
+ if(!allWas&&allDone())setTimeout(()=>showTicket(true),reduce?0:500); // all four sections finished: the ticket takes the screen
  const again=$("panel").querySelector(`input[data-i="${i}"]`);if(keep===c&&again)again.focus({preventScroll:true});
  if(!c.checked||!again||reduce)return;
  burst(...centre(again),"#7C68FA",18);animate(again,{scale:[.6,1]},{type:"spring",stiffness:170,damping:15});
@@ -898,8 +898,10 @@ void main(){
  };
 }
 let ticket,tixOpen=false;
-function showTicket(){
- if(tixOpen)return;tixOpen=true;
+function showTicket(auto){ // auto: a day was just finished. Shown once per day, so re-ticking a step later does not bring it back.
+ if(tixOpen)return;
+ if(auto){try{if(localStorage.getItem("baseline-season-ticket")===T)return;localStorage.setItem("baseline-season-ticket",T)}catch(e){}}
+ tixOpen=true;
  const el=$("tix"),cv=$("tixC"),back=$("tixBack"),hint=$("tixHint"),p2=n=>String(n).padStart(2,"0"),n=days+1;
  const info=days<0?{big:"0",side:"of 84",cap:"season starts "+nice(day(START)).toLowerCase(),wk:-1,part:0}
   :days>=84?{big:String(n),side:"days in",cap:"season complete",wk:12,part:0}
@@ -957,7 +959,8 @@ $("logDate").value=T;
 draw();renderTop();renderDash();renderProg();
 const preview=()=>location.hash==="#ticket"; // …/#ticket opens the day-complete ticket straight away, for a look without finishing a day
 enter();
-if(preview())showTicket();addEventListener("hashchange",()=>{if(preview())showTicket()});
+const peek=()=>{if(!preview())return;showTicket();history.replaceState(null,"",location.pathname+location.search)}; // drop #ticket so a later reload opens the app, not the ticket
+peek();addEventListener("hashchange",peek);
 // when the app is reopened on a new day, start that day fresh
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&iso(new Date())!==T)location.reload()});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
