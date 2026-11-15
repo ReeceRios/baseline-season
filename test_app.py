@@ -71,6 +71,10 @@ with sync_playwright() as pw:
     # logging
     p.click("#nav [data-tab=prog]"); p.wait_for_timeout(400)
     ok("rep targets month 1","145–155" in txt(p,"#targets .ladder .on") and "month 1" in txt(p,"#targetsMeta"))
+    p.click("#numsBox summary"); p.fill("#bSQ","275"); p.fill("#bFt","9"); p.fill("#bIn","7"); p.click("#baseSave")
+    ok("numbers can be edited","Saved" in txt(p,"#baseMsg") and "165–195" in txt(p,"#targets .ladder .on") and "275" in txt(p,"#sumLift") and "5 in to the rim" in txt(p,"#sumDunk"),txt(p,"#targets .ladder .on")+"|"+txt(p,"#sumLift")+"|"+txt(p,"#sumDunk"))
+    ok("other lifts keep the written prescription","210–225" in txt(p,"#targets"))
+    p.fill("#bSQ","225"); p.fill("#bIn","6"); p.click("#baseSave"); p.click("#numsBox summary")
     p.click("#logBox summary"); p.select_option("#logType","lift"); p.select_option("#logLift","squat_lb"); p.fill("#logWeight","235"); p.check("#logMax"); p.click("#logForm .btn")
     ok("lift logged",txt(p,"#logMsg")=="Logged." and "235" in txt(p,"#sumLift"),txt(p,"#sumLift"))
     p.select_option("#logType","vert"); p.fill("#logFt","9"); p.fill("#logIn","9"); p.click("#logForm .btn"); ok("vert logged","3 in to go" in txt(p,"#sumDunk"),txt(p,"#sumDunk"))

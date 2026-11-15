@@ -102,7 +102,7 @@ html{overflow-x:clip}
 .wk.now{box-shadow:inset 0 0 0 2px var(--ink)}
 .ghost{height:48px;border:1px solid var(--muted);border-radius:12px;background:#fff;font-weight:700;cursor:pointer}
 .tg{background:#fff;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
-.tg .hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.tg .hd b{font-size:16px}.tg .hd em{font-style:normal;font-size:22px;font-weight:700;color:var(--deep)}
+.tg>.meta{font-size:12px;color:var(--muted)}.tg .hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.tg .hd b{font-size:16px}.tg .hd em{font-style:normal;font-size:22px;font-weight:700;color:var(--deep)}
 .ladder{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .ladder div{border-radius:10px;padding:8px 10px;background:var(--slate);display:flex;flex-direction:column}.ladder span{font-size:11px;color:var(--muted)}.ladder b{font-size:14px;white-space:nowrap}.ladder div{min-width:0}
 .ladder .on{background:var(--deep);color:#fff}.ladder .on span{color:var(--soft)}
@@ -235,6 +235,13 @@ table.rm td:nth-child(2),table.rm td:nth-child(3){white-space:nowrap}
 
 <section class="page" id="t-prog" hidden>
   <h2 class="h">Progress</h2>
+  <details class="box" id="numsBox"><summary>Your numbers<span id="sumBase"></span></summary><div class="in">
+    <p class="note">Your current maxes and standing reach. Working ranges, rep targets and the dunk gap are worked out from these.</p>
+    <label>Squat max (lb) <input id="bSQ" type="number" inputmode="decimal"></label>
+    <label>Deadlift max (lb) <input id="bDL" type="number" inputmode="decimal"></label>
+    <label>Hang Clean max (lb) <input id="bHC" type="number" inputmode="decimal"></label>
+    <div class="two"><label>Standing reach, feet <input id="bFt" type="number" inputmode="numeric" min="5" max="9"></label><label>Inches <input id="bIn" type="number" inputmode="decimal" min="0" max="11.5" step="0.5"></label></div>
+    <button class="btn" id="baseSave" type="button">Save numbers</button><p id="baseMsg" class="msg" role="status"></p></div></details>
   <div class="box"><h3>Rep targets</h3><span class="meta" id="targetsMeta"></span><div id="targets" class="col"></div>
     <p class="sub">Session B accessories</p>
     <div class="kv"><span>Hip thrust</span><b>3 × 8</b></div><div class="kv"><span>Leg press</span><b>3 × 8</b></div><div class="kv"><span>Step-ups + shrimp squats</span><b>3 × 8 / leg</b></div><div class="kv"><span>Back day</span><b>2 sets each</b></div></div>
@@ -259,11 +266,6 @@ table.rm td:nth-child(2),table.rm td:nth-child(3){white-space:nowrap}
     </form><p id="logMsg" class="msg" role="status"></p></div></details>
   <details class="box"><summary>History<span id="sumHist"></span></summary><div class="in" id="history"></div></details>
   <p class="sub">Settings</p>
-  <details class="box"><summary>Starting baselines<span id="sumBase"></span></summary><div class="in">
-    <label>Hang Clean (lb) <input id="bHC" type="number" inputmode="decimal"></label>
-    <label>Squat (lb) <input id="bSQ" type="number" inputmode="decimal"></label>
-    <label>Deadlift (lb) <input id="bDL" type="number" inputmode="decimal"></label>
-    <button class="btn" id="baseSave" type="button">Save baselines</button><p id="baseMsg" class="msg" role="status"></p></div></details>
   <details class="box"><summary>Backup<span>On this phone only</span></summary><div class="in">
     <p class="note">Your log lives in this browser. Copy a backup now and then, and paste it back here to restore.</p>
     <label>Backup text <textarea id="bk" rows="4"></textarea></label>
@@ -352,7 +354,11 @@ const V={
 };
 
 // --- the program. Each step is [name, detail, video key]. ---
-const RX=[["Squat","3 × 5",["145–155","170–180","180–200"]],["Deadlift","3 × 5",["210–225","245–260","260–290"]],["Hang Clean","5 × 3",["80–95","100–108","108–120"]]];
+// Starting prescriptions from the roadmap, written for the starting maxes (225 / 325 / 135).
+const RX=[["squat_lb","Squat","3 × 5",225,["145–155","170–180","180–200"]],["deadlift_lb","Deadlift","3 × 5",325,["210–225","245–260","260–290"]],["hang_clean_lb","Hang Clean","5 × 3",135,["80–95","100–108","108–120"]]];
+// Once a max differs from its starting number, each month's load is that month's share of the max (60–70, 70–80, 80–90%), to the nearest 5 lb.
+const r5=n=>Math.round(n/5)*5,SHARE=[[60,70],[70,80],[80,90]];
+const rxLoad=(x,i)=>{const c=cur(x[0]);return c===x[3]?x[4][i]:`${r5(c*SHARE[i][0]/100)}–${r5(c*SHARE[i][1]/100)}`};
 const FA=[["Pogo, plate, line hops","20–30 sec, 2–4 sets","hops"],["Lower-leg circuit","pogo 30 reps, calf raises 20/leg","lower"],["Running drills","skips, backward running, ankling, bounding, build-up strides, 2×20 m","drills"],["Landing control","stop when landings get loud","landing"]];
 const FB=[["ATG hip standards","incline pigeon, couch stretch, seated good morning, loaded butterfly, ATG split squat","atg"],["5-min hip routine","90/90 hip thrust 2×10/side, frog stretch + rotation 2×6/side","hip5"],["Pick 2–3","deficit lunge, Copenhagen, Cossack squats, KB windmills","pick"]];
 const FC=[["Clean work","progression or Power Clean EMOM","clean"],["Contrast","calf raises → pogo jumps, or KB swings + box jumps","contrast"],["Main jumps","pick 2","jumps"],["Rotational finish","KB rotational patterns, 2×8/side","rot"]];
@@ -515,19 +521,19 @@ function renderDash(){
 function renderProg(){
  const b=state.baselines,m=ph[3];
  say("targetsMeta",`Sets × reps stay fixed. The load climbs each month. ${days<0?"Month 1 starts "+nice(day(START))+".":"You are in month "+(m+1)+"."}`);
- $("targets").innerHTML=RX.map(([n,sr,l])=>`<div class="tg"><div class="hd"><b>${n}</b><em>${sr}</em></div><div class="ladder">${l.map((x,i)=>`<div class="${i===m?"on":""}"><span>${i===m&&days>=0?"Now":"Month "+(i+1)}</span><b>${x} lb</b></div>`).join("")}</div></div>`).join("");
+ $("targets").innerHTML=RX.map(x=>`<div class="tg"><div class="hd"><b>${x[1]}</b><em>${x[2]}</em></div><div class="ladder">${[0,1,2].map(i=>`<div class="${i===m?"on":""}"><span>${i===m&&days>=0?"Now":"Month "+(i+1)}</span><b>${rxLoad(x,i)} lb</b></div>`).join("")}</div><span class="meta">From your ${cur(x[0])} lb max</span></div>`).join("");
  const verts=state.logs.filter(l=>l.type==="vert"),reach=Math.max(b.reach_in,...verts.map(l=>l.reach));
  say("sumDunk",verts.length?(reach<RIM?`${ftin(reach)} · ${RIM-reach} in to go`:`${ftin(reach)} · over the rim`):`${RIM-b.reach_in} in to the rim`);
  $("reachbar").style.width=Math.min(100,Math.max(4,(reach-b.reach_in)/(RIM-b.reach_in)*100))+"%";
  $("dunkRows").innerHTML=`<div class="kv"><span>Standing reach</span><b>${ftin(b.reach_in)}</b></div><div class="kv"><span>Best touch</span><b>${verts.length?ftin(reach):"Not tested yet"}</b></div><div class="kv"><span>Rim</span><b>10'0"</b></div>`;
- say("sumLift",Object.keys(LIFTS).map(cur).join(" · ")+" lb");say("sumBase",Object.keys(LIFTS).map(k=>b[k]).join(" · ")+" lb");
+ say("sumLift",Object.keys(LIFTS).map(cur).join(" · ")+" lb");say("sumBase",`Squat ${b.squat_lb} · tap to edit`);
  $("lifts").innerHTML=Object.keys(LIFTS).map(k=>{const c=cur(k),last=state.logs.filter(l=>l.type==="lift"&&l.lift===k).sort((x,y)=>x.date<y.date?1:-1)[0];
   return `<div class="liftc"><span>${LIFTS[k]}</span><b>${c} lb</b><span>Baseline ${b[k]} lb${c>b[k]?` · +${c-b[k]} lb`:""}</span><span>${last?`Last: ${last.weight} lb · ${nice(day(last.date))}`:"No sets logged"}</span></div>`}).join("");
  for(const d of["5K","10K"]){const r=state.logs.filter(l=>l.type==="run"&&l.dist===d).sort((x,y)=>secs(x.time)-secs(y.time))[0];say("r"+d,r?`${r.time} · ${nice(day(r.date))}`:"Not tested yet");if(d==="5K")say("sumRun",r?"5K "+r.time:"Not tested")}
  say("sumHist",state.logs.length+(state.logs.length===1?" entry":" entries"));
  const line=l=>l.type==="lift"?`${LIFTS[l.lift]} ${l.weight} lb${l.max?" · new max":""}`:l.type==="vert"?`Vert test · reach ${ftin(l.reach)}`:l.type==="run"?`${l.dist} · ${l.time}`:esc(l.label||"Workout");
  $("history").innerHTML=state.logs.length?[...state.logs].sort((x,y)=>x.date<y.date?1:x.date>y.date?-1:y.id-x.id).slice(0,30).map(l=>`<div class="hrow"><div><b>${line(l)}</b><span>${nice(day(l.date))}${l.details?" · "+esc(l.details):""}</span></div><button type="button" data-del="${l.id}">Delete</button></div>`).join(""):`<p class="note">Nothing logged yet.</p>`;
- if(document.activeElement.tagName!=="INPUT"){$("bHC").value=b.hang_clean_lb;$("bSQ").value=b.squat_lb;$("bDL").value=b.deadlift_lb}
+ if(document.activeElement.tagName!=="INPUT"){$("bHC").value=b.hang_clean_lb;$("bSQ").value=b.squat_lb;$("bDL").value=b.deadlift_lb;$("bFt").value=Math.floor(b.reach_in/12);$("bIn").value=b.reach_in%12}
 }
 $("logType").onchange=e=>{$("logForm").className="k-"+e.target.value};
 $("logForm").addEventListener("submit",e=>{e.preventDefault();
@@ -538,9 +544,10 @@ $("logForm").addEventListener("submit",e=>{e.preventDefault();
  if(t==="run"){l.dist=$("logDist").value;l.time=$("logTime").value.trim();if(!/^\d{1,3}(:[0-5]\d){1,2}$/.test(l.time))err="Enter the time as mm:ss or h:mm:ss."}
  if(err)return say("logMsg",err);
  state.logs.push(l);save();for(const i of["logLabel","logWeight","logIn","logTime","logDetails"])$(i).value="";$("logMax").checked=false;say("logMsg","Logged.");renderProg();paint()});
-$("baseSave").onclick=()=>{const v={hang_clean_lb:+$("bHC").value,squat_lb:+$("bSQ").value,deadlift_lb:+$("bDL").value};
- if(!Object.values(v).every(x=>x>0))return say("baseMsg","Enter a weight above 0 for each lift.");
- Object.assign(state.baselines,v);save();say("baseMsg","Baselines saved. Loads recomputed.");renderProg();paint()};
+$("baseSave").onclick=()=>{const v={hang_clean_lb:+$("bHC").value,squat_lb:+$("bSQ").value,deadlift_lb:+$("bDL").value,reach_in:$("bFt").value*12+ +$("bIn").value};
+ if(![v.hang_clean_lb,v.squat_lb,v.deadlift_lb].every(x=>x>0))return say("baseMsg","Enter a weight above 0 for each lift.");
+ if(!(v.reach_in>=60&&v.reach_in<RIM))return say("baseMsg","Enter your standing reach, e.g. 9 ft 6 in.");
+ Object.assign(state.baselines,v);save();say("baseMsg","Saved. Working ranges and targets updated.");renderProg();paint()};
 $("bkCopy").onclick=async()=>{$("bk").value=JSON.stringify(state);$("bk").select();
  try{await navigator.clipboard.writeText($("bk").value);say("bkMsg","Backup copied. Paste it into Notes or an email to yourself.")}catch(e){say("bkMsg","Select the text above and copy it.")}};
 $("bkRestore").onclick=()=>{try{const s=JSON.parse($("bk").value);
