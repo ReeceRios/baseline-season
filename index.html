@@ -176,6 +176,14 @@ details.box>summary span{font-size:12px;letter-spacing:0;text-transform:uppercas
 .sh b{font-size:19px;font-weight:500;letter-spacing:-.03em;line-height:1}.sh span,.credit{text-transform:uppercase;font-size:11px;letter-spacing:.01em}
 .vchip{font-size:12px;font-weight:600}.ePills span{font-size:11px;font-weight:600;letter-spacing:.01em}
 .box input,.box select,.box textarea{text-transform:none;letter-spacing:0}
+/* review fixes */
+.toggle{scroll-margin-top:calc(10px + env(safe-area-inset-top))}
+.timer b{font-size:26px;line-height:1;vertical-align:-3px;margin-left:4px}
+.wk .st{position:relative;background:#fff;box-shadow:inset 0 0 0 2px #C9CDE3}.wk.done .st{background:var(--purple);box-shadow:none}.wk .st:after{content:"";position:absolute;inset:-9px}
+.season i{background:#C9CDE3}
+.page>.sub{margin:14px 14px -4px}.box>.sub{margin:4px 0 0}
+details.box>summary:after{width:16px;height:16px;border:0;transform:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 6l5 5 5-5' stroke='%23202020' stroke-width='2.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}details[open].box>summary:after{transform:rotate(180deg)}
+table.rm td:nth-child(2),table.rm td:nth-child(3){white-space:nowrap}
 </style>
 </head>
 <body>
@@ -217,7 +225,7 @@ details.box>summary span{font-size:12px;letter-spacing:0;text-transform:uppercas
 </section>
 
 <section class="page" id="t-dash" hidden>
-  <h2 class="h">Dashboard</h2><p class="hsub" id="dashSub"></p>
+  <h2 class="h" id="dashH"></h2><p class="hsub" id="dashSub"></p>
   <div class="box"><h3>Season</h3><div class="season" id="season" role="img"></div><span class="meta" id="seasonMeta"></span></div>
   <div class="box"><h3 id="weekHead">This week</h3><div id="weekRows" class="col"></div><button class="ghost" type="button" data-tab="today">Open today</button></div>
   <div class="box"><h3>Tests</h3><div id="tests" class="col"></div></div>
@@ -226,7 +234,7 @@ details.box>summary span{font-size:12px;letter-spacing:0;text-transform:uppercas
 </section>
 
 <section class="page" id="t-prog" hidden>
-  <h2 class="h">Progress</h2><p class="hsub">What you are working towards</p>
+  <h2 class="h">Progress</h2>
   <div class="box"><h3>Rep targets</h3><span class="meta" id="targetsMeta"></span><div id="targets" class="col"></div>
     <p class="sub">Session B accessories</p>
     <div class="kv"><span>Hip thrust</span><b>3 × 8</b></div><div class="kv"><span>Leg press</span><b>3 × 8</b></div><div class="kv"><span>Step-ups + shrimp squats</span><b>3 × 8 / leg</b></div><div class="kv"><span>Back day</span><b>2 sets each</b></div></div>
@@ -358,7 +366,7 @@ const sec=(k,sub,steps,need,loads)=>({k,sub,steps,need:need||steps.length,loads}
 const mobPick=()=>sec("mob","10 min · pick a set",MOB,1),cardioPick=()=>sec("cardio","15–25 min · pick one",CARDIO,1);
 const lightP=()=>sec("plyo","Light · low hops only",LIGHT_P),lightL=()=>sec("lift","Light · technique, pick one",LIGHT_L,1);
 function buildPlan(m){ // Mon..Sun, for prescription month m
- const SA=[["Back / front squat",`3×5 · ${RX[0][2][m]} lb`,"squat"],["Bulgarian split squats","","bss"],["Romanian deadlifts","","rdl"],["Single-leg step-ups","","stepup1"],["Copenhagen plank","","copen"],CORE];
+ const SA=[["Back / front squat","3×5","squat"],["Bulgarian split squats","","bss"],["Romanian deadlifts","","rdl"],["Single-leg step-ups","","stepup1"],["Copenhagen plank","","copen"],CORE];
  const SB=[["Hip thrust","3×8","hip"],["Leg press","3×8","legpress"],["Weighted step-ups + shrimp squats","3×8/leg","stepup"],["Back day","2 sets each: chest-supported row, rack pull, pulldown / pull-ups, cable rows, lat pullover, reverse fly","back"],CORE];
  return [
   {title:"Full A — squat focus",detail:"Flow C, then Session A",secs:[sec("plyo","Flow C · power · 15–20 min",FC),mobPick(),cardioPick(),sec("lift","Session A · squat focus · 30–40 min",SA,0,1)]},
@@ -455,9 +463,9 @@ function renderPanel(enter){
 toggle.onclick=()=>{
  const open=toggle.getAttribute("aria-expanded")!=="true",pn=$("panel");
  toggle.setAttribute("aria-expanded",String(open));
- if(reduce){pn.hidden=!open;return}
+ if(reduce){pn.hidden=!open;if(open)toggle.scrollIntoView({block:"start"});return}
  if(open){pn.hidden=false;pn.classList.remove("enter");void pn.offsetWidth;pn.classList.add("enter");const h=pn.offsetHeight;pn.style.overflow="hidden";
-  animate(pn,{height:[0,h],opacity:[0,1]},{duration:.28,ease:"easeOut"}).then(()=>{pn.style.height=pn.style.overflow=pn.style.opacity=""});}
+  animate(pn,{height:[0,h],opacity:[0,1]},{duration:.28,ease:"easeOut"}).then(()=>{pn.style.height=pn.style.overflow=pn.style.opacity="";toggle.scrollIntoView({block:"start",behavior:"smooth"})});}
  else{pn.style.overflow="hidden";
   animate(pn,{height:[pn.offsetHeight,0],opacity:0},{duration:.2,ease:"easeIn"}).then(()=>{if(toggle.getAttribute("aria-expanded")!=="true")pn.hidden=true;pn.style.height=pn.style.overflow=pn.style.opacity=""});}
 };
@@ -494,9 +502,9 @@ $("dayCheck").onclick=()=>{const on=!state.done[T];on?state.done[T]=1:delete sta
 const TICK='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function renderDash(){
  const s0=day(START),dn=Array.from({length:84},(_,i)=>iso(plus(s0,i))),count=dn.filter(k=>state.done[k]).length;
- say("dashSub","Baseline season · "+(days<0?`starts ${nice(s0)}`:ph[0]));
+ say("dashH",days<0?"Pre-season":days>=84?"Season complete":`Week ${w} of 12`);say("dashSub",days<0?`Baseline season starts ${nice(s0)}`:ph[0]);
  $("season").innerHTML=dn.map(k=>`<i class="${state.done[k]?"d":k===T?"n":""}"></i>`).join("");$("season").setAttribute("aria-label",`${count} of 84 days done`);
- say("seasonMeta",(days<0?`In ${-days} day${days===-1?"":"s"}`:days>=84?"Season complete":`Week ${w} of 12`)+` · ${count} of 84 days done`+(ph[1]&&days>=0?` · working at ${ph[1]}–${ph[2]}%`:""));
+ say("seasonMeta",(days<0?`In ${-days} day${days===-1?"":"s"} · `:"")+`${count} of 84 days done`+(ph[1]&&days>=0?` · working at ${ph[1]}–${ph[2]}%`:""));
  const wk=Math.min(12,w),mon=plus(s0,7*(wk-1));say("weekHead",days<0?"First week":"This week");
  $("weekRows").innerHTML=PLAN.map((p,i)=>{const d=plus(mon,i),k=iso(d),dn2=!!state.done[k],[wdn,dd]=nice(d).split(" ");
   return `<div class="wk ${dn2?"done":""} ${k===T?"now":""}"><div class="dy">${wdn}<b>${dd}</b></div><div class="tx"><b>${p.title}</b><span>${p.detail}</span></div><button class="st" type="button" data-done="${k}" aria-pressed="${dn2}" aria-label="${nice(d)} done">${dn2?TICK:""}</button></div>`}).join("");
