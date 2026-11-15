@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Today, slider — preview</title>
+<style>
+@font-face{font-family:"DM Sans";src:url("fonts/dm-sans.woff2") format("woff2");font-weight:100 1000;font-display:swap}
+:root{--ink:#202020;--purple:#7C68FA;--slate:#EDEFF9;--muted:#606891;--deep:#1A1250;--soft:#DAD6F5;--night:#100C28;--c:#7C68FA}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#fff;color:var(--ink);font:15px/1.4 "Arial Nova","DM Sans",Arial,sans-serif}
+button{font:inherit;color:inherit}
+.wrap{max-width:440px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+/* top row: day check, week, day */
+.top{display:flex;align-items:stretch;gap:8px}
+.daycheck{flex:none;width:52px;border:2px solid var(--ink);border-radius:14px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.daycheck svg{opacity:.25}
+.daycheck[aria-pressed="true"]{background:var(--deep);border-color:var(--deep)}.daycheck[aria-pressed="true"] svg{opacity:1}.daycheck[aria-pressed="true"] path{stroke:#fff}
+.chip{flex:1;background:var(--slate);border-radius:14px;padding:8px 12px;display:flex;flex-direction:column}
+.chip span{font-size:11px;color:var(--muted)}.chip b{font-size:17px;line-height:22px}.chip b small{font-size:13px;font-weight:400;color:var(--muted)}
+/* card */
+.card{background:var(--deep);color:#fff;border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.view{overflow:hidden;touch-action:pan-y}
+.reel{display:flex;will-change:transform}
+.reel img{flex:none;display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+.slider{display:block;margin:10px 14px 0;touch-action:none;cursor:grab;border-radius:40px;outline:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.slider:active{cursor:grabbing}
+.slider:focus-visible{box-shadow:0 0 0 3px #fff}
+.slider svg{display:block;width:100%;height:auto;overflow:visible}
+.slider text{font:700 15px "DM Sans",Arial,sans-serif;fill:var(--night)}
+.label{padding:4px 18px 16px;text-align:center}
+.label b{display:block;font-size:26px;line-height:30px;letter-spacing:.02em}
+.label span{font-size:13px;color:var(--soft)}
+/* steps toggle takes the category colour */
+.toggle{height:52px;border:0;border-radius:14px;background:var(--c);color:var(--night);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;cursor:pointer;transition:background .2s}
+.toggle svg{transition:transform .2s}.toggle[aria-expanded="true"] svg{transform:rotate(180deg)}
+.panel{background:var(--slate);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.panel[hidden]{display:none}
+.loads{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.loads div{background:#fff;border-radius:10px;padding:8px 10px;display:flex;flex-direction:column}.loads span{font-size:11px;color:var(--muted)}.loads b{font-size:15px}
+.note{font-size:12px;color:var(--muted);margin:0}
+.row{display:flex;align-items:center;gap:4px;background:#fff;border-radius:10px;padding:4px 4px 4px 12px}
+.row label{flex:1;display:flex;align-items:flex-start;gap:12px;padding:8px 0;cursor:pointer;min-width:0}
+.row input{flex:none;width:22px;height:22px;margin:0;accent-color:var(--purple)}
+.row .t{display:flex;flex-direction:column;gap:2px}.row .t b{font-size:15px}.row .t span{font-size:13px;color:var(--muted)}
+.play{flex:none;width:44px;height:44px;border:0;border-radius:50%;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.play i{width:32px;height:32px;border-radius:50%;background:var(--deep);display:flex;align-items:center;justify-content:center}
+.timer{display:flex;align-items:center;gap:8px}.timer span{flex:1;font-size:13px;color:var(--muted)}.timer b{color:var(--ink);font-size:15px}
+.timer button{height:44px;padding:0 12px;border:1px solid var(--muted);border-radius:10px;background:#fff;font-weight:700;cursor:pointer}
+.tag{align-self:center;font-size:12px;color:var(--muted)}
+/* video sheet */
+.scrim{position:fixed;inset:0;background:rgba(16,12,40,.55);opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;background:#fff;border-radius:18px 18px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;gap:12px;max-height:100dvh;overflow-y:auto}
+body.sheet-open .scrim{opacity:1;pointer-events:auto}body.sheet-open .sheet{transform:none}
+.grab{align-self:center;width:40px;height:5px;border-radius:3px;background:#D5D8E8}
+.sh{display:flex;align-items:flex-start;gap:12px}.sh div{flex:1}.sh b{display:block;font-size:17px}.sh span{font-size:13px;color:var(--muted)}
+.x{width:44px;height:44px;border:0;border-radius:50%;background:var(--slate);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.vid{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000}
+.vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.chips::-webkit-scrollbar{display:none}
+.vchip{flex:none;height:36px;padding:0 14px;border:1px solid #C9CDE3;border-radius:999px;background:#fff;font-size:14px;cursor:pointer;white-space:nowrap}
+.vchip[aria-pressed="true"]{background:var(--deep);border-color:var(--deep);color:#fff}
+.credit{font-size:12px;color:var(--muted)}
+@media (orientation:landscape) and (max-height:520px){.wrap{max-width:720px;display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);align-items:start}.top,.tag{grid-column:1/-1}.card{grid-row:span 2}.vid{width:min(100%,calc((100dvh - 170px)*16/9));align-self:center}}
+@media (prefers-reduced-motion:reduce){.sheet,.scrim,.toggle,.toggle svg{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <button class="daycheck" id="dayCheck" type="button" aria-pressed="false" aria-label="Mark day done"><svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.5" stroke="#202020" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="chip"><span>Week</span><b>3 <small>of 12</small></b></div>
+    <div class="chip"><span>Day · Fri 4 Dec</span><b>19 <small>of 84</small></b></div>
+  </div>
+
+  <div class="card">
+    <div class="view" id="view"><div class="reel" id="reel"></div></div>
+    <div class="slider" id="slider" role="slider" tabindex="0" aria-label="Section" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1" aria-valuetext="Plyos">
+      <svg viewBox="0 0 320 80" aria-hidden="true">
+        <path d="M36 28Q160 52 284 28" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="54" stroke-linecap="round"/>
+        <path d="M36 28Q160 52 284 28" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="2" stroke-dasharray="2 9" stroke-linecap="round"/>
+        <g id="dots"></g>
+        <g id="knob"><circle r="22" id="knobC"/><text id="knobT" text-anchor="middle" dy="5"></text><path id="knobK" d="M-7 0.5l4.5 4.5L7.5-5" fill="none" stroke="#100C28" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></g>
+      </svg>
+    </div>
+    <div class="label" aria-live="polite"><b id="name"></b><span id="sub"></span></div>
+  </div>
+
+  <button class="toggle" id="toggle" type="button" aria-expanded="false" aria-controls="panel"><span id="toggleText"></span><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" stroke="#100C28" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <div class="panel" id="panel" hidden></div>
+  <span class="tag">Preview · sample day · slide, swipe the picture, or tap a dot</span>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle" aria-hidden="true">
+  <div class="grab" aria-hidden="true"></div>
+  <div class="sh"><div><b id="shTitle"></b><span id="shSub"></span></div>
+    <button class="x" id="shClose" type="button" aria-label="Close video"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="#202020" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+  <div class="vid" id="vid"></div>
+  <div class="chips" id="chips" role="group" aria-label="Videos for this step"></div>
+  <div class="credit" id="credit"></div>
+</section>
+
+<script>
+// Videos are YouTube embeds: [video id, label, channel]. Change an id to swap a video.
+const V={
+ clean:[["GvfFf4xDNqM","Hang power clean","Wodstar"],["qQ8InArxi-Y","Three tips","UCLA Recreation"]],
+ contrast:[["lQMewLeVfoA","Weighted calf raise","The Active Life"],["j0nl5dWuqN4","Pogo jumps","Runna"],["bDCeXbMJVNs","KB swing","Zack Henderson"],["LeiLzSU3OXE","Box jump","Made Possible PT"]],
+ jumps:[["B7vbjJ2wQQQ","Approach jump","Elevate Yourself"],["STGtDv9qDwc","Jump technique","Isaiah Rivera"]],
+ rot:[["-cYdEI4T694","Rotational KB swing","Jlfitnessmiami"]],
+ mobA:[["3PIjhyzF3DI","Deficit lunge","Die Tryin Company"],["1NNqUQvMYGc","Copenhagen","[P]rehab"],["YHvCJIR8YdQ","Cable curtsy lunge","Respond Fitness"]],
+ mobB:[["nLNqEQ4B6XI","Cossack squat","Dr. Carl Baird"],["wjYNzITBDqg","KB windmill","Functional Bodybuilding"],["eUjU3YBHe-Y","Offset deadlift","The Sustainable Training Method"],["_I98ircIcpE","Renegade row","Get Healthy U"]],
+ mobC:[["UJ9ki8tjG1A","Ankles","mobility by julia reppel"],["0CrX59ulj9U","T-spine","Physiotutors"]],
+ hill:[["iuRkesShAAE","Hill sprints","Performance Lab"]],
+ sprint:[["3vOISexmyN4","Sprint form","Justjumari"]],
+ hip:[["pUdIL5x0fWg","Hip thrust","Nuffield Health"],["xDmFkJxPzeM","Full breakdown","Jeff Nippard"]],
+ legpress:[["n1MQcwTN7YQ","Leg press","Kelly Matthews"]],
+ stepup:[["9ZknEYboBOQ","Step-up","Bobby Maximus"],["FcQ77QxcotE","Shrimp squat","The Active Life"],["_K3mchRTtqM","Shrimp progressions","Coastal Fitness"]],
+ back:[["vmX58YYK3-8","Chest-supported row","Seriously Strong Training"],["9vYBWV5OeKg","Rack pull","PureGym"],["AOpi-p0cJkc","Pulldown","SilverSneakers"],["vwHG9Jfu4sw","Cable row","Max Euceda"],["32auHIqgEoM","Lat pullover","Max Euceda"],["3MKmYlhxgOo","Reverse fly","Runna"]]
+};
+// The four sections, always in this order. `need` = steps to tick before the section counts as done.
+const S=[
+ {k:"plyo",name:"Plyos",sub:"Flow C · power · 15–20 min",c:"#7C68FA",need:4,steps:[
+  ["Clean work","progression or Power Clean EMOM","clean"],
+  ["Contrast","calf raises → pogo jumps, or KB swings + box jumps","contrast"],
+  ["Main jumps","pick 2","jumps"],
+  ["Rotational finish","KB rotational patterns, 2×8/side","rot"]]},
+ {k:"mob",name:"Mobility",sub:"10 min",c:"#3EB7DE",need:3,steps:[
+  ["Lunge set","deficit lunge, Copenhagen dips, cable curtsy lunge, foam roller step-overs","mobA"],
+  ["Strength set","Cossack squats, half-kneeling KB windmills, single-arm offset deadlifts, renegade rows","mobB"],
+  ["Joint prep","ankle / hip / T-spine / shoulder","mobC"]]},
+ {k:"cardio",name:"Cardio",sub:"15–25 min · pick one",c:"#FA512E",need:1,steps:[
+  ["Bristol Method","rotate bike → rower, 20–30 min",null],
+  ["Hill sprints","6–8 × 20–30 sec uphill, walk back","hill"],
+  ["Easy run / ride / swim","20–40 min, conversational pace",null],
+  ["Sprints","4–6 × 30–60 m, full walk-back rest","sprint"]]},
+ {k:"lift",name:"Lifting",sub:"Session B · hinge / back · 30–40 min",c:"#608C84",need:5,loads:true,steps:[
+  ["Hip thrust","3×8","hip"],
+  ["Leg press","3×8","legpress"],
+  ["Weighted step-ups + shrimp squats","3×8/leg","stepup"],
+  ["Back day","2 sets each: chest-supported row, rack pull, pulldown / pull-ups, cable rows, lat pullover, reverse fly","back"],
+  ["Core finisher","pick one",null]]}
+];
+const ticks=S.map(s=>s.steps.map(()=>0)); ticks[0]=[1,1,1,0];
+const $=id=>document.getElementById(id);
+const NS="http://www.w3.org/2000/svg";
+const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+const PLAY='<i><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" fill="#fff"/></svg></i>';
+const got=i=>ticks[i].filter(Boolean).length, complete=i=>got(i)>=S[i].need;
+
+// --- slider: knob rides a curved track; t in 0..1, pos in 0..3 ---
+const pt=t=>[36+248*t, 28+48*t*(1-t)];
+$("reel").innerHTML=S.map(s=>`<img src="icons/tile-${s.k}.webp" alt="" width="360" height="360">`).join("");
+S.forEach((s,i)=>{const c=document.createElementNS(NS,"circle");const [x,y]=pt(i/3);c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",4.5);c.setAttribute("fill",s.c);$("dots").appendChild(c)});
+let pos=0,idx=0,raf=0,target=0; // target = where the knob is heading, so quick repeat presses add up
+function draw(){
+ const [x,y]=pt(pos/3); $("knob").setAttribute("transform",`translate(${x} ${y})`);
+ $("reel").style.transform=`translateX(${-pos*100}%)`;
+ const near=Math.round(pos);
+ if(near!==idx||!$("name").textContent){idx=near;paint()}
+}
+function paint(){
+ const s=S[idx],done=complete(idx);
+ document.documentElement.style.setProperty("--c",s.c);
+ $("knobC").setAttribute("fill",s.c);
+ $("knobT").textContent=done?"":idx+1; $("knobK").style.display=done?"":"none";
+ $("name").textContent=s.name.toUpperCase(); $("sub").textContent=s.sub;
+ $("slider").setAttribute("aria-valuenow",idx+1); $("slider").setAttribute("aria-valuetext",s.name);
+ $("toggleText").textContent=`${s.name} steps · ${done?"done":s.need===1?"pick one":got(idx)+" of "+s.need}`;
+ renderPanel();
+ const all=S.every((_,i)=>complete(i)); if(all)$("dayCheck").setAttribute("aria-pressed","true");
+}
+function go(to){
+ to=target=Math.max(0,Math.min(3,to)); cancelAnimationFrame(raf);
+ if(reduce){pos=to;draw();return}
+ const from=pos,t0=performance.now(),dur=160+60*Math.abs(to-from);
+ (function step(now){const k=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-k,3);pos=from+(to-from)*e;draw();if(k<1)raf=requestAnimationFrame(step)})(t0);
+}
+const sl=$("slider");let drag=false,moved=false;
+const fromX=e=>{const r=sl.querySelector("svg").getBoundingClientRect();return Math.max(0,Math.min(1,((e.clientX-r.left)/r.width*320-36)/248))*3};
+sl.addEventListener("pointerdown",e=>{drag=true;moved=false;sl.setPointerCapture(e.pointerId);cancelAnimationFrame(raf);pos=fromX(e);draw()});
+sl.addEventListener("pointermove",e=>{if(!drag)return;moved=true;pos=fromX(e);draw()});
+const end=()=>{if(!drag)return;drag=false;go(Math.round(pos))};
+sl.addEventListener("pointerup",end);sl.addEventListener("pointercancel",end);
+sl.addEventListener("keydown",e=>{const d={ArrowRight:1,ArrowUp:1,ArrowLeft:-1,ArrowDown:-1}[e.key];if(d){e.preventDefault();go(target+d)}else if(e.key==="Home"){e.preventDefault();go(0)}else if(e.key==="End"){e.preventDefault();go(3)}});
+// Swiping the picture moves one section at a time.
+let sx=null,sy=null;
+$("view").addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+$("view").addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;sx=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5)go(target+(dx<0?1:-1))});
+
+// --- steps panel ---
+function renderPanel(){
+ const s=S[idx];
+ const loads=s.loads?`<div class="loads"><div><span>Hang Clean</span><b>81–95</b></div><div><span>Squat</span><b>135–158</b></div><div><span>Deadlift</span><b>195–228</b></div></div><p class="note">Working range in lb, 60–70% of max.</p>`:"";
+ const rows=s.steps.map(([n,d,v],i)=>`<div class="row"><label><input type="checkbox" data-i="${i}" ${ticks[idx][i]?"checked":""}><span class="t"><b>${n}</b><span>${d}</span></span></label>${v?`<button class="play" type="button" data-v="${v}" data-n="${n}" aria-label="Watch: ${n}">${PLAY}</button>`:""}</div>`).join("");
+ const timer=s.loads?`<div class="timer"><span>Rest <b id="restOut"></b></span><button type="button" data-rest="60">60 s</button><button type="button" data-rest="90">90 s</button><button type="button" data-rest="120">120 s</button></div>`:"";
+ $("panel").innerHTML=loads+rows+timer; showRest();
+}
+$("toggle").onclick=()=>{const open=$("toggle").getAttribute("aria-expanded")!=="true";$("toggle").setAttribute("aria-expanded",String(open));$("panel").hidden=!open};
+$("panel").addEventListener("change",e=>{const c=e.target;if(c.dataset.i===undefined)return;ticks[idx][+c.dataset.i]=c.checked?1:0;const keep=document.activeElement;paint();const again=$("panel").querySelector(`input[data-i="${c.dataset.i}"]`);if(keep===c&&again)again.focus()});
+$("dayCheck").onclick=()=>{const b=$("dayCheck");b.setAttribute("aria-pressed",String(b.getAttribute("aria-pressed")!=="true"))};
+let restEnd=0,restInt=0;
+function showRest(){const o=$("restOut");if(!o)return;const left=Math.max(0,Math.ceil((restEnd-Date.now())/1000));o.textContent=left?`${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}`:"";if(!left&&restInt){clearInterval(restInt);restInt=0}}
+document.addEventListener("click",e=>{
+ const r=e.target.closest("[data-rest]");if(r){restEnd=Date.now()+r.dataset.rest*1000;clearInterval(restInt);restInt=setInterval(showRest,250);showRest();return}
+ const play=e.target.closest(".play");if(play){openSheet(play.dataset.n,play.dataset.v,play);return}
+ const chip=e.target.closest(".vchip");if(chip)show(+chip.dataset.i);
+});
+
+// --- video sheet ---
+let cur=null,lastFocus=null;
+function openSheet(name,key,from){
+ cur={name,list:V[key]};lastFocus=from;$("shTitle").textContent=name;
+ $("chips").innerHTML=cur.list.length>1?cur.list.map(([,l],i)=>`<button class="vchip" type="button" data-i="${i}" aria-pressed="false">${l}</button>`).join(""):"";
+ $("chips").hidden=cur.list.length<2;show(0);
+ document.body.classList.add("sheet-open");$("sheet").setAttribute("aria-hidden","false");$("shClose").focus();
+}
+function show(i){
+ const [id,label,ch]=cur.list[i];
+ $("shSub").textContent=cur.list.length>1?label:"";$("credit").textContent="Video: "+ch+" on YouTube";
+ document.querySelectorAll(".vchip").forEach(c=>c.setAttribute("aria-pressed",String(+c.dataset.i===i)));
+ // Muted autoplay is the only autoplay iPhone allows inline; tap the video for sound.
+ $("vid").innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1" title="${label} — ${ch}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+}
+function closeSheet(){
+ document.body.classList.remove("sheet-open");$("sheet").setAttribute("aria-hidden","true");
+ setTimeout(()=>{if(!document.body.classList.contains("sheet-open"))$("vid").innerHTML=""},260); // removing the iframe stops playback
+ if(lastFocus)lastFocus.focus();
+}
+$("shClose").onclick=closeSheet;$("scrim").onclick=closeSheet;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.body.classList.contains("sheet-open"))closeSheet()});
+let y0=null;
+$("sheet").addEventListener("touchstart",e=>{if(e.target.closest(".vid,.chips"))return;y0=e.touches[0].clientY},{passive:true});
+$("sheet").addEventListener("touchmove",e=>{if(y0===null)return;$("sheet").style.transform=`translateY(${Math.max(0,e.touches[0].clientY-y0)}px)`},{passive:true});
+$("sheet").addEventListener("touchend",e=>{if(y0===null)return;const dy=e.changedTouches[0].clientY-y0;y0=null;$("sheet").style.transform="";if(dy>90)closeSheet()});
+draw();
+</script>
+</body>
+</html>
