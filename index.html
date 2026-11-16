@@ -331,6 +331,7 @@ table.rm td:nth-child(2),table.rm td:nth-child(3){white-space:nowrap}
 <script type="module">
 import {animate,motionValue} from "./vendor/motion.js";
 const KEY="baseline-season-v2",START="2026-11-16",RIM=120;
+const BUILD="28"; // keep in step with version.json and the cache name in sw.js; an open app reloads itself when they differ
 const LIFTS={hang_clean_lb:"Hang Clean",squat_lb:"Squat",deadlift_lb:"Deadlift"};
 const TESTS={1:"Vert test this week",2:"5K time trial this week",12:"Retest week: vert, lifts, 5K and 10K"};
 const $=id=>document.getElementById(id);
@@ -447,8 +448,9 @@ const centre=el=>{const r=el.getBoundingClientRect();return [r.left+r.width/2,r.
 const pt=t=>[36+248*t,28+48*t*(1-t)];
 $("view").innerHTML=ORDER.map((k,i)=>`<img src="icons/shot-${k}.webp" alt="" decoding="async"${i?' style="opacity:0"':""}>`).join(""); // stacked; each fades in over the one before
 COL.forEach((c,i)=>{const d=document.createElementNS(NS,"circle");const [x,y]=pt(i/3);d.setAttribute("cx",x);d.setAttribute("cy",y);d.setAttribute("r",3.6);$("dots").appendChild(d)});
-let pos=0,idx=0,target=0;
-const SPRING={type:"spring",visualDuration:.3,bounce:.2},mv=motionValue(0);
+const FIRST=Math.max(0,S.findIndex((_,i)=>!complete(i))); // open on the first section that still has work
+let pos=FIRST,idx=FIRST,target=FIRST;
+const SPRING={type:"spring",visualDuration:.3,bounce:.2},mv=motionValue(FIRST);
 const RGB=COL.map(c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)));
 const imgs=[...$("view").children],dotEls=[...$("dots").children],knobEl=$("knob"),knobC=$("knobC"),label=$("label"),toggle=$("toggle");
 let lightText=null;
@@ -1003,7 +1005,23 @@ enter();
 const peek=()=>{if(!preview())return;showTicket();history.replaceState(null,"",location.pathname+location.search)}; // drop #ticket so a later reload opens the app, not the ticket
 peek();addEventListener("hashchange",peek);
 // when the app is reopened on a new day, start that day fresh
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&iso(new Date())!==T)location.reload()});
+// Coming back to an app left open: start fresh if it is a new day, if it sat in the background for an hour or more, or if a newer build is out.
+// A shorter break (a rest, a run with the phone locked) picks up exactly where you left off.
+let awaySince=0;const AWAY=60*60*1000;
+async function newer(){
+ try{const r=await fetch("version.json",{cache:"no-store"});if(!r.ok)return false;const b=String((await r.json()).build);
+  if(b===BUILD||sessionStorage.getItem("bs-build")===b)return false; // one reload per build, so a slow network cannot loop
+  sessionStorage.setItem("bs-build",b);return true}catch(e){return false}
+}
+async function back(){
+ if(document.hidden){awaySince=Date.now();return}
+ const long=awaySince&&Date.now()-awaySince>=AWAY;awaySince=0;
+ if(iso(new Date())!==T||long)return location.reload();
+ if(/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName))return; // not while typing a log entry
+ if(await newer())location.reload();
+}
+document.addEventListener("visibilitychange",back);addEventListener("pageshow",e=>{if(e.persisted)back()});
+setTimeout(async()=>{if(await newer())location.reload()},4000); // the saved copy was served (offline or slow) and a newer one exists
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>

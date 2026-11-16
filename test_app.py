@@ -172,6 +172,23 @@ with sync_playwright() as pw:
     ok("preview link does not stick in the address",v.evaluate("location.hash")=="")
     ok("preview marks nothing done",v.evaluate("localStorage.getItem('baseline-season-v2')") in (None,"") or '"done":{}' in v.evaluate("localStorage.getItem('baseline-season-v2')"))
     v.context.close()
+    # an app left open starts fresh: after an hour away, on a newer build, and on the first section with work left
+    import re
+    src=open(os.path.join(root,"index.html"),encoding="utf-8").read(); bld=re.search(r'const BUILD="(\d+)"',src).group(1)
+    ok("build numbers agree",json.load(open(os.path.join(root,"version.json")))["build"]==bld and f'"baseline-season-{bld}"' in open(os.path.join(root,"sw.js")).read(),bld)
+    f=page("2026-11-16T07:00:00",{"baselines":{},"done":{},"ticks":{},"logs":[],"t2":{"2026-11-16":{"plyo":[0,1,2,3]}}},reduced=True); f.wait_for_timeout(500); f.click("#eGo"); f.wait_for_timeout(300)
+    ok("opens on the first section with work left",f.text_content("#name")=="MOBILITY" and f.get_attribute("#slider","aria-valuenow")=="2",f.text_content("#name"))
+    away=lambda pg,hid:pg.evaluate("h=>{Object.defineProperty(document,'hidden',{get:()=>h,configurable:true});document.dispatchEvent(new Event('visibilitychange'))}",hid)
+    f.focus("#slider"); f.keyboard.press("End"); f.wait_for_timeout(200); f.evaluate("window.__same=1")
+    away(f,True); f.clock.set_fixed_time(datetime.datetime.fromisoformat("2026-11-16T07:20:00")); away(f,False); f.wait_for_timeout(800)
+    ok("a short break picks up where you left off",f.evaluate("window.__same")==1 and f.text_content("#name")=="LIFTING" and f.locator("#entry").count()==0)
+    away(f,True); f.clock.set_fixed_time(datetime.datetime.fromisoformat("2026-11-16T08:25:00")); away(f,False); f.wait_for_timeout(1200)
+    ok("an hour away starts fresh, entry included",f.evaluate("window.__same")!=1 and f.locator("#entry").count()==1 and f.text_content("#name")=="MOBILITY")
+    f.click("#eGo"); f.wait_for_timeout(300); f.evaluate("window.__same=1")
+    f.route("**/version.json",lambda r:r.fulfill(json={"build":"999"})); away(f,True); away(f,False); f.wait_for_timeout(1500)
+    ok("a newer build reloads the open app",f.evaluate("window.__same")!=1 and f.locator("#entry").count()==1)
+    f.click("#eGo"); f.wait_for_timeout(300); f.evaluate("window.__same=1"); away(f,True); away(f,False); f.wait_for_timeout(5500)
+    ok("and only once per build",f.evaluate("window.__same")==1); ok("fresh-start: no errors",not f.errs,str(f.errs)); f.context.close()
     # sideways scroll, on a page with a running clock (a frozen clock also freezes the slide-in animation)
     r=b.new_context(viewport={"width":390,"height":844}).new_page(); r.goto(url); start(r); wide=[]
     for t in ("dash","prog","today","prog","dash"):

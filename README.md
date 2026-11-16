@@ -29,7 +29,8 @@ Anyone with the link can open the page (it shows your name, height and baselines
 - `index.html` — the whole app
 - `manifest.webmanifest`, `icons/` — home-screen name and icon
 - `fonts/dm-sans.woff2` — DM Sans, SIL Open Font License (`fonts/OFL.txt`)
-- `sw.js` — offline cache. Updates you upload show on the second open.
+- `sw.js` — offline cache. An update shows the next time the app is opened.
+- `version.json` — the build number. For each release, raise it together with `BUILD` in `index.html` and the cache name in `sw.js`; an app left open reloads itself when it sees a newer number.
 - `test.py` — self-check (`pip install playwright && python test.py`)
 
 To change the start date, edit `START` near the top of the script in `index.html`.
